@@ -1,0 +1,6 @@
+project:
+  type: website
+  output-dir: docs   # GitHub Pages serves this folder (Settings > Pages > main branch, /docs)
+
+website:
+  title: "DS4I Assignment 2"

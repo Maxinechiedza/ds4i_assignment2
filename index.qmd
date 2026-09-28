@@ -1,0 +1,532 @@
+---
+title: "Who wrote this digit? Writer identification with CNNs and Siamese networks"   # working title – change freely
+subtitle: "STA5073Z Data Science for Industry 2026 · Assignment 2"
+author:
+  - name: "Maxine Senderayi"   # Role A – data, evaluation design and comparison
+  - name: "Nicole Thomas"      # Role B or C – to be confirmed
+  - name: "[Third member]"     # Role B or C – to be confirmed
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    code-fold: true
+    code-summary: "Show code"
+    fig-align: center
+execute:
+  echo: true
+  warning: false
+  message: false
+
+# Shows the coloured "Owner / what goes here" boxes.
+# Set to false before submitting – every box disappears from the rendered report.
+show-guidance: true
+---
+
+```{r}
+#| label: setup
+#| include: false
+# OWNER: Maxine (A). Shared set-up – tell the group before changing anything here.
+library(tidyverse)
+set.seed(2026)
+theme_set(theme_minimal(base_size = 11))
+
+# TRUE once every listed file exists. Use it on any chunk that needs a file:
+#   #| eval: !expr ready("outputs/cnn_test_predictions.csv")
+# so the report still renders before that file has been produced.
+ready <- function(...) all(file.exists(c(...)))
+
+if (ready("data/handwriting.rds")) {
+  hw   <- readRDS("data/handwriting.rds")
+  meta <- hw$metadata
+}
+```
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="How to use this file (hidden when show-guidance: false)"}
+**Colour = owner.** Green = Maxine (Role A, data, splits and comparison) · Blue = Role B (CNN) · Red = Role C (Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).
+
+| Report section | Task | Owner | Words | Reads |
+|---|---|---|---|---|
+| Introduction | 8 | Not assigned yet | ≈ 400 | – |
+| Data and exploration | 1 | Maxine (A) | ≈ 550 | `data/handwriting.rds` |
+| Evaluation design | 4 | Maxine (A) | ≈ 550 | `data/splits.csv` |
+| Writer identification with a CNN | 2 | B | ≈ 650 | `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv` |
+| Same-writer matching with a Siamese network | 3 | C | ≈ 650 | `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv` |
+| Hyperparameter sensitivity: CNN | 5 | B | ≈ 300 | `outputs/tuning_cnn.csv` |
+| Hyperparameter sensitivity: Siamese | 5 | C | ≈ 300 | `outputs/tuning_siamese.csv` |
+| CNN vs Siamese: CNN results by digit and session | 6 | B | ≈ 300 | B's own outputs |
+| CNN vs Siamese: Siamese results by digit and session | 6 | C | ≈ 300 | C's own outputs |
+| CNN vs Siamese: side by side | 6 | Maxine (A) | ≈ 400 | `outputs/comparison.csv` |
+| Conclusion | 8 | Not assigned yet | ≈ 300 | – |
+| **Total** | | | **≈ 4,700** | Limit 5,000 (excludes AI use statement, appendices, captions, references) |
+
+**House rules**
+
+- Edit only your own sections. To change someone else's, tell them or open a pull request.
+- Write in your own words. The brief allows AI for proofreading only, not first drafts.
+- Model training lives in scripts (`R/` or `python/`) that write to `outputs/`. The report only reads those files, so it renders in seconds. Commit the scripts too: that is what makes it reproducible.
+- Label figures and tables with your section key: `eda`, `split`, `cnn`, `siam`, `tune`, `comp` (e.g. `fig-cnn-digit`, `tbl-siam-metrics`). Cross-reference with `@fig-cnn-digit` and `@sec-cnn`.
+- Numbers in the text come from inline `r` code reading the output files, never typed by hand. They then stay correct when a model is re-run.
+- Guard every chunk that needs a file with `#| eval: !expr ready("path")`.
+- Keep a note of your AI use per task as you go. It goes in the appendix table at the end.
+:::
+:::
+
+<!-- =====================================================================
+     INTRODUCTION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 400 words
+     ===================================================================== -->
+
+# Introduction {#sec-intro}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Owner: not assigned yet · Task 8 · ≈ 400 words"}
+**Must cover:** the two questions (which of 20 known writers wrote this image, and did the same person write these two images?) · the data in one paragraph (20 writers × 5 digits × 5 sessions × 50 replicates, simulated) · why writer identification matters in practice · a one-line roadmap of the report.
+:::
+:::
+
+<!-- =====================================================================
+     DATA AND EXPLORATION  ·  Task 1  ·  OWNER: Maxine (A)  ·  ≈ 550 words
+     ===================================================================== -->
+
+# Data and exploration {#sec-eda}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-tip title="Owner: Maxine (Role A) · Task 1 · ≈ 550 words"}
+**The brief asks for:** examples across people, digits and sessions · the visible sources of variation · the limitations of this simulated data.
+
+**Answer these:**
+
+- What differs between writers? Between sessions of the same writer? Between replicates within one session?
+- Which simple features vary most (ink amount, width and height, centre of mass, slant)? Do they vary more by writer or by session?
+- How much variance sits between writers, between sessions and within a session (variance decomposition)?
+- Do writers separate in a PCA of the raw pixels? Do sessions?
+- What makes this data easier or less realistic than real handwriting (simulated, digits 0–4 only, 20 writers, perfectly balanced, clean and centred images)?
+
+**Exhibits (labels to use):** `fig-eda-grid` writers × digits · `fig-eda-sessions` one writer and digit across sessions 1–5 · `fig-eda-means` mean and difference images · `fig-eda-features` feature boxplots · `tbl-eda-variance` variance decomposition · `fig-eda-pca` PCA coloured by writer and session.
+
+**Reads:** `data/handwriting.rds`. EDA is fast enough to run inside this file.
+:::
+:::
+
+```{r}
+#| label: fig-eda-grid
+#| fig-cap: "One image per writer (rows) and digit (columns), session 1."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: grid of example images across writers and digits
+```
+
+```{r}
+#| label: fig-eda-sessions
+#| fig-cap: "One writer's digits across sessions 1–5."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: same writer and digit across the five sessions, a few replicates each
+```
+
+```{r}
+#| label: fig-eda-means
+#| fig-cap: "Mean image per writer, and session mean minus writer mean."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: mean and difference images
+```
+
+```{r}
+#| label: fig-eda-features
+#| fig-cap: "Simple image features by writer, session and digit."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: ink amount, width/height, centre of mass, slant
+```
+
+```{r}
+#| label: tbl-eda-variance
+#| tbl-cap: "Share of feature variance between writers, between sessions and within sessions."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: variance decomposition of the features above
+```
+
+```{r}
+#| label: fig-eda-pca
+#| fig-cap: "First two principal components of the pixels, coloured by writer and by session."
+#| eval: !expr ready("data/handwriting.rds")
+# Maxine: PCA of pixels
+```
+
+<!-- =====================================================================
+     EVALUATION DESIGN  ·  Task 4  ·  OWNER: Maxine (A)  ·  ≈ 550 words
+     ===================================================================== -->
+
+# Evaluation design {#sec-split}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-tip title="Owner: Maxine (Role A) · Task 4 · ≈ 550 words"}
+**The brief asks for:** the chosen train, validation and test strategy and why · what kind of generalisation the evaluation represents · possible leakage or optimistic performance.
+
+**Answer these:**
+
+- Main split (both models): sessions 1–3 train, 4 validation, 5 test. What does it test? (A known writer on a new day.)
+- Unseen-writer split (Siamese only): 14 / 3 / 3 writers. What does it test? (A person the model has never seen.) Why can the CNN not do this?
+- What is validation used for (early stopping, tuning, the Siamese threshold)? Why is test touched only once?
+- Optimism experiment: how much better does a simple baseline look on a random image split than on the session-held-out split?
+- Leakage risks: near-duplicate replicates within a session, pairs built before splitting, a threshold tuned on test, the same image in training and test pairs.
+- Why might results still be optimistic even with a clean split (simulated data, 20 writers)?
+
+**Exhibits:** `tbl-split-counts` images per split · `tbl-split-optimism` (or `fig-split-optimism`) baseline accuracy on the two splits.
+
+**Reads:** `data/splits.csv`. **Code:** `R/00_data.R` writes the split; `R/optimism_baseline.R` runs the experiment.
+:::
+:::
+
+```{r}
+#| label: tbl-split-counts
+#| tbl-cap: "Number of images in each split."
+#| eval: !expr ready("data/splits.csv")
+splits <- read_csv("data/splits.csv", show_col_types = FALSE)
+# Maxine: counts by split_main and split_writer
+```
+
+```{r}
+#| label: tbl-split-optimism
+#| tbl-cap: "Baseline writer accuracy on a random image split vs the session-held-out split."
+#| eval: !expr ready("outputs/optimism_baseline.csv")
+# Maxine: read outputs/optimism_baseline.csv and show the gap
+```
+
+<!-- =====================================================================
+     CNN  ·  Task 2  ·  OWNER: Role B  ·  ≈ 650 words
+     ===================================================================== -->
+
+# Writer identification with a CNN {#sec-cnn}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-note title="Owner: Role B · Task 2 · ≈ 650 words"}
+**The brief asks for:** a prediction task whose response is writer ID · a CNN, built and evaluated · overall writer identification performance · performance compared by digit · what the evaluation measures mean in real-world terms.
+
+**Answer these:**
+
+- What exactly is predicted? (Input: one 28 × 28 image. Output: one of 20 known writers, a closed set.) Point to @sec-split for the split rather than repeating it.
+- Architecture and training: layers, embedding size, optimiser, learning rate, batch size, epochs, early stopping rule.
+- Overall test results: accuracy, top-3 accuracy, macro-F1. Which writers get confused with each other?
+- Accuracy by digit, with 95% intervals (1,000 test images per digit).
+- What do the numbers mean in practice? The chance of naming the right writer for a sample written on a new day; top-3 as a shortlist for a human examiner; the model always names one of the 20, even for an unknown writer.
+
+**Exhibits:** `tbl-cnn-arch` layers · `fig-cnn-training` loss and accuracy curves · `tbl-cnn-metrics` overall metrics · `fig-cnn-confusion` confusion matrix · `fig-cnn-digit` accuracy by digit.
+
+**Reads:** `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv`. **Code:** `R/cnn.R`.
+:::
+:::
+
+```{r}
+#| label: tbl-cnn-arch
+#| tbl-cap: "CNN architecture."
+#| eval: false
+# B: layer table (can be typed by hand or taken from summary(model))
+```
+
+```{r}
+#| label: fig-cnn-training
+#| fig-cap: "CNN training and validation loss and accuracy by epoch."
+#| eval: !expr ready("outputs/cnn_history.csv")
+# B: training curves
+```
+
+```{r}
+#| label: tbl-cnn-metrics
+#| tbl-cap: "CNN writer identification on the session-5 test set."
+#| eval: !expr ready("outputs/cnn_test_predictions.csv")
+cnn_pred <- read_csv("outputs/cnn_test_predictions.csv", show_col_types = FALSE)
+# B: accuracy, top-3 accuracy, macro-F1
+```
+
+```{r}
+#| label: fig-cnn-confusion
+#| fig-cap: "Confusion matrix of true vs predicted writer on the test set."
+#| eval: !expr ready("outputs/cnn_test_predictions.csv")
+# B: confusion matrix heatmap
+```
+
+```{r}
+#| label: fig-cnn-digit
+#| fig-cap: "CNN test accuracy by digit, with 95% intervals."
+#| eval: !expr ready("outputs/cnn_test_predictions.csv")
+# B: accuracy by digit
+```
+
+<!-- =====================================================================
+     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Role C  ·  ≈ 650 words
+     ===================================================================== -->
+
+# Same-writer matching with a Siamese network {#sec-siam}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-important title="Owner: Role C · Task 3 · ≈ 650 words"}
+**The brief asks for:** a Siamese network that estimates whether two images come from the same writer · contrastive or triplet loss · how training examples are constructed · how matching performance is evaluated.
+
+**Answer these:**
+
+- Architecture: shared encoder (same backbone as the CNN), embedding size, distance.
+- Loss: contrastive or triplet, the margin, and why.
+- Training examples: how positive and negative pairs are sampled, why digit is held fixed, the same/different balance, cross-session positives, and pairs built only after splitting.
+- Threshold: chosen on validation pairs by balanced accuracy.
+- Test results on `data/test_pairs.csv`: ROC AUC, equal error rate, balanced accuracy, and distance histograms for same vs different pairs.
+- Unseen-writer experiment: the same metrics on the 3 held-out writers.
+- What the errors mean: a false accept matches two different writers; a false reject misses a true match. Which matters more depends on the use.
+
+**Exhibits:** `fig-siam-pairs` example positive and negative pairs · `fig-siam-dist` distance histograms · `fig-siam-roc` ROC curves · `tbl-siam-metrics` main split vs unseen writers.
+
+**Reads:** `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv`. **Code:** `R/siamese.R` (or `python/siamese.py`).
+:::
+:::
+
+```{r}
+#| label: fig-siam-pairs
+#| fig-cap: "Example positive (same writer) and negative (different writer) training pairs."
+#| eval: !expr ready("data/handwriting.rds", "data/test_pairs.csv")
+# C: a few pairs of each kind
+```
+
+```{r}
+#| label: fig-siam-dist
+#| fig-cap: "Embedding distances for same-writer and different-writer test pairs."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FALSE)
+# C: histograms, with the validation threshold marked
+```
+
+```{r}
+#| label: fig-siam-roc
+#| fig-cap: "ROC curves for same-writer matching."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+# C: ROC curve(s)
+```
+
+```{r}
+#| label: tbl-siam-metrics
+#| tbl-cap: "Siamese matching performance: known writers on a new session vs unseen writers."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+# C: AUC, EER, balanced accuracy for both settings
+```
+
+<!-- =====================================================================
+     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: B (CNN) and C (Siamese)
+     ===================================================================== -->
+
+# Hyperparameter sensitivity {#sec-tune}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Shared section · Task 5"}
+**The brief asks for:** a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. B writes the CNN part and C the Siamese part. Use the same plot style so the two figures read alike.
+:::
+:::
+
+<!-- ---- CNN tuning · OWNER: Role B · ≈ 300 words ---- -->
+
+## CNN {#sec-tune-cnn}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-note title="Owner: Role B · Task 5 · ≈ 300 words"}
+**Answer these:**
+
+- Which 2–3 hyperparameters were varied, over which values, and why those?
+- Design: grid or random search, number of configurations, seeds per configuration. Chosen on validation only.
+- How much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?
+- The chosen configuration and its single test result.
+
+**Exhibits:** `fig-tune-cnn`. **Reads:** `outputs/tuning_cnn.csv`. **Code:** `R/tune_cnn.R`.
+:::
+:::
+
+```{r}
+#| label: fig-tune-cnn
+#| fig-cap: "CNN validation accuracy across hyperparameter values (points = seeds)."
+#| eval: !expr ready("outputs/tuning_cnn.csv")
+tune_cnn <- read_csv("outputs/tuning_cnn.csv", show_col_types = FALSE)
+# B: sensitivity plot
+```
+
+<!-- ---- Siamese tuning · OWNER: Role C · ≈ 300 words ---- -->
+
+## Siamese network {#sec-tune-siam}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-important title="Owner: Role C · Task 5 · ≈ 300 words"}
+**Answer these:**
+
+- Which hyperparameters were varied (e.g. margin, embedding size, learning rate, pairs per epoch), over which values, and why?
+- Design: number of configurations and seeds. Chosen on validation AUC only.
+- How much does validation AUC move across each hyperparameter, compared with seed-to-seed noise?
+- The chosen configuration and its single test result.
+
+**Exhibits:** `fig-tune-siam`. **Reads:** `outputs/tuning_siamese.csv`. **Code:** `R/tune_siamese.R`.
+:::
+:::
+
+```{r}
+#| label: fig-tune-siam
+#| fig-cap: "Siamese validation AUC across hyperparameter values (points = seeds)."
+#| eval: !expr ready("outputs/tuning_siamese.csv")
+tune_siam <- read_csv("outputs/tuning_siamese.csv", show_col_types = FALSE)
+# C: sensitivity plot, same style as fig-tune-cnn
+```
+
+<!-- =====================================================================
+     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: B, C, Maxine (A)
+     ===================================================================== -->
+
+# CNN vs Siamese network: digits and sessions {#sec-comp}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Shared section · Task 6"}
+**The brief asks for:** a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. B and C each report their own model's digit and session results; Maxine then compares the two side by side.
+:::
+:::
+
+<!-- ---- CNN by digit and session · OWNER: Role B · ≈ 300 words ---- -->
+
+## CNN results by digit and session {#sec-comp-cnn}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-note title="Owner: Role B · Task 6 · ≈ 300 words"}
+**Answer these:**
+
+- Digit-only CNNs (one model per digit): which digit alone identifies writers best and worst?
+- Does that ranking match the per-digit accuracy of the full model in @sec-cnn?
+- Leave-one-session-out: accuracy for each held-out session. Is any session unusual?
+
+**Exhibits:** `fig-comp-cnn-digitonly` · `fig-comp-cnn-loso`. **Code:** `R/cnn_digit_session.R`.
+:::
+:::
+
+```{r}
+#| label: fig-comp-cnn-digitonly
+#| fig-cap: "Test accuracy of CNNs trained on a single digit."
+#| eval: !expr ready("outputs/cnn_digit_only.csv")
+# B: accuracy by digit for digit-only models
+```
+
+```{r}
+#| label: fig-comp-cnn-loso
+#| fig-cap: "CNN accuracy for each held-out session (leave-one-session-out)."
+#| eval: !expr ready("outputs/cnn_loso.csv")
+# B: accuracy by held-out session
+```
+
+<!-- ---- Siamese by digit and session · OWNER: Role C · ≈ 300 words ---- -->
+
+## Siamese results by digit and session {#sec-comp-siam}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-important title="Owner: Role C · Task 6 · ≈ 300 words"}
+**Answer these:**
+
+- AUC by digit: which digits separate writers best and worst?
+- Same-session vs cross-session positive pairs: how much larger are distances across sessions?
+- Cross-digit pairs: does writer identity carry across digits?
+
+**Exhibits:** `fig-comp-siam-digit` · `fig-comp-siam-session`. **Reads:** `outputs/siamese_test_distances.csv`.
+:::
+:::
+
+```{r}
+#| label: fig-comp-siam-digit
+#| fig-cap: "Siamese matching AUC by digit."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+# C: AUC by digit
+```
+
+```{r}
+#| label: fig-comp-siam-session
+#| fig-cap: "Distances for same-writer pairs from the same session vs different sessions."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+# C: same- vs cross-session distances
+```
+
+<!-- ---- Side by side · OWNER: Maxine (A) · ≈ 400 words ---- -->
+
+## Side by side {#sec-comp-both}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-tip title="Owner: Maxine (Role A) · Task 6 · ≈ 400 words"}
+**Answer these:**
+
+- With one script on the same test pairs, how do the PCA baseline, CNN and Siamese embeddings compare on AUC, equal error rate and nearest-centroid writer accuracy?
+- Which model suits which question (identify one of 20 known writers vs verify a pair), and what does each cost (e.g. retraining when a new writer is added)?
+- Do the digit rankings agree across the CNN, the Siamese network and the EDA?
+- How large is the session gap (same-session vs cross-session) for each model?
+- Critical caveats: simulated data, one test session, 20 writers.
+
+**Exhibits:** `tbl-comp-summary` · `fig-comp-digit` AUC by digit for PCA, CNN and Siamese.
+
+**Reads:** `outputs/comparison.csv`. **Code:** `R/eval_embeddings.R` (reads `outputs/cnn_embeddings.csv`, `outputs/siamese_embeddings.csv`, `data/test_pairs.csv`).
+:::
+:::
+
+```{r}
+#| label: tbl-comp-summary
+#| tbl-cap: "PCA baseline, CNN and Siamese embeddings scored on the same test pairs."
+#| eval: !expr ready("outputs/comparison.csv")
+comparison <- read_csv("outputs/comparison.csv", show_col_types = FALSE)
+# Maxine: AUC, EER, nearest-centroid accuracy; same- vs cross-session
+```
+
+```{r}
+#| label: fig-comp-digit
+#| fig-cap: "Matching AUC by digit for the PCA baseline, CNN and Siamese network."
+#| eval: !expr ready("outputs/comparison.csv")
+# Maxine: AUC by digit, one line or bar group per model
+```
+
+<!-- =====================================================================
+     CONCLUSION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 300 words
+     ===================================================================== -->
+
+# Conclusion {#sec-conclusion}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Owner: not assigned yet · Task 8 · ≈ 300 words"}
+**Must cover:** the answer to each question in one or two sentences · the main limitation · what you would do next with more time or real data.
+:::
+:::
+
+# References {.unnumbered}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Owner: not assigned yet"}
+Add a `references.bib` file and `bibliography: references.bib` to the YAML header, then cite with `[@key]`. The list appears here automatically.
+:::
+:::
+
+::: {#refs}
+:::
+
+<!-- =====================================================================
+     APPENDICES  ·  not counted in the 5,000 words
+     ===================================================================== -->
+
+# Plagiarism declaration {.appendix}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Owner: not assigned yet"}
+Paste the course's standard plagiarism declaration here, with all three names.
+:::
+:::
+
+# AI use statement {.appendix}
+
+::: {.content-visible when-meta="show-guidance"}
+::: {.callout-warning title="Each person fills the rows for their own tasks"}
+The brief asks, for each task: (a) what tool you used, (b) what you used it for, (c) if and how you checked its outputs, and (d) how much of what it produced you ended up using.
+:::
+:::
+
+| Task | Filled by | (a) Tool | (b) Used for | (c) How checked | (d) How much used |
+|---|---|---|---|---|---|
+| 1 Data exploration | Maxine | | | | |
+| 2 CNN | B | | | | |
+| 3 Siamese network | C | | | | |
+| 4 Evaluation design | Maxine | | | | |
+| 5 Hyperparameter sensitivity | B, C | | | | |
+| 6 Comparison | Maxine, B, C | | | | |
+| 7 Git and GitHub | Maxine | | | | |
+| 8 Report | All | | | | |
+| 9 GitHub Pages | Maxine | | | | |
