@@ -7,3 +7,5 @@
 outputs/models/
 .httr-oauth
 .quarto
+
+**/*.quarto_ipynb
