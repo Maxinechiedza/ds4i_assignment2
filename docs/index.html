@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Maxine Senderayi">
+<meta name="author" content="Nicole Thomas">
+<meta name="author" content="[Third member]">
+<meta name="dcterms.date" content="2026-09-28">
+
+<title>Who wrote this digit? Writer identification with CNNs and Siamese networks – DS4I Assignment 2</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ba8f7c244c1f50cbf6c6a3aa3874339a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#sec-intro" id="toc-sec-intro" class="nav-link active" data-scroll-target="#sec-intro"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#sec-eda" id="toc-sec-eda" class="nav-link" data-scroll-target="#sec-eda"><span class="header-section-number">2</span> Data and exploration</a></li>
+  <li><a href="#sec-split" id="toc-sec-split" class="nav-link" data-scroll-target="#sec-split"><span class="header-section-number">3</span> Evaluation design</a></li>
+  <li><a href="#sec-cnn" id="toc-sec-cnn" class="nav-link" data-scroll-target="#sec-cnn"><span class="header-section-number">4</span> Writer identification with a CNN</a></li>
+  <li><a href="#sec-siam" id="toc-sec-siam" class="nav-link" data-scroll-target="#sec-siam"><span class="header-section-number">5</span> Same-writer matching with a Siamese network</a></li>
+  <li><a href="#sec-tune" id="toc-sec-tune" class="nav-link" data-scroll-target="#sec-tune"><span class="header-section-number">6</span> Hyperparameter sensitivity</a>
+  <ul class="collapse">
+  <li><a href="#sec-tune-cnn" id="toc-sec-tune-cnn" class="nav-link" data-scroll-target="#sec-tune-cnn"><span class="header-section-number">6.1</span> CNN</a></li>
+  <li><a href="#sec-tune-siam" id="toc-sec-tune-siam" class="nav-link" data-scroll-target="#sec-tune-siam"><span class="header-section-number">6.2</span> Siamese network</a></li>
+  </ul></li>
+  <li><a href="#sec-comp" id="toc-sec-comp" class="nav-link" data-scroll-target="#sec-comp"><span class="header-section-number">7</span> CNN vs Siamese network: digits and sessions</a>
+  <ul class="collapse">
+  <li><a href="#sec-comp-cnn" id="toc-sec-comp-cnn" class="nav-link" data-scroll-target="#sec-comp-cnn"><span class="header-section-number">7.1</span> CNN results by digit and session</a></li>
+  <li><a href="#sec-comp-siam" id="toc-sec-comp-siam" class="nav-link" data-scroll-target="#sec-comp-siam"><span class="header-section-number">7.2</span> Siamese results by digit and session</a></li>
+  <li><a href="#sec-comp-both" id="toc-sec-comp-both" class="nav-link" data-scroll-target="#sec-comp-both"><span class="header-section-number">7.3</span> Side by side</a></li>
+  </ul></li>
+  <li><a href="#sec-conclusion" id="toc-sec-conclusion" class="nav-link" data-scroll-target="#sec-conclusion"><span class="header-section-number">8</span> Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  
+  
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Who wrote this digit? Writer identification with CNNs and Siamese networks</h1>
+<p class="subtitle lead">STA5073Z Data Science for Industry 2026 · Assignment 2</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Maxine Senderayi </p>
+             <p>Nicole Thomas </p>
+             <p>[Third member] </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 28, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-warning callout-titled" title="How to use this file (hidden when show-guidance: false)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>How to use this file (hidden when show-guidance: false)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Colour = owner.</strong> Green = Maxine (Role A, data, splits and comparison) · Blue = Role B (CNN) · Red = Role C (Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Report section</th>
+<th>Task</th>
+<th>Owner</th>
+<th>Words</th>
+<th>Reads</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Introduction</td>
+<td>8</td>
+<td>Not assigned yet</td>
+<td>≈ 400</td>
+<td>–</td>
+</tr>
+<tr class="even">
+<td>Data and exploration</td>
+<td>1</td>
+<td>Maxine (A)</td>
+<td>≈ 550</td>
+<td><code>data/handwriting.rds</code></td>
+</tr>
+<tr class="odd">
+<td>Evaluation design</td>
+<td>4</td>
+<td>Maxine (A)</td>
+<td>≈ 550</td>
+<td><code>data/splits.csv</code></td>
+</tr>
+<tr class="even">
+<td>Writer identification with a CNN</td>
+<td>2</td>
+<td>B</td>
+<td>≈ 650</td>
+<td><code>outputs/cnn_test_predictions.csv</code>, <code>outputs/cnn_history.csv</code></td>
+</tr>
+<tr class="odd">
+<td>Same-writer matching with a Siamese network</td>
+<td>3</td>
+<td>C</td>
+<td>≈ 650</td>
+<td><code>outputs/siamese_test_distances.csv</code>, <code>outputs/siamese_history.csv</code></td>
+</tr>
+<tr class="even">
+<td>Hyperparameter sensitivity: CNN</td>
+<td>5</td>
+<td>B</td>
+<td>≈ 300</td>
+<td><code>outputs/tuning_cnn.csv</code></td>
+</tr>
+<tr class="odd">
+<td>Hyperparameter sensitivity: Siamese</td>
+<td>5</td>
+<td>C</td>
+<td>≈ 300</td>
+<td><code>outputs/tuning_siamese.csv</code></td>
+</tr>
+<tr class="even">
+<td>CNN vs Siamese: CNN results by digit and session</td>
+<td>6</td>
+<td>B</td>
+<td>≈ 300</td>
+<td>B’s own outputs</td>
+</tr>
+<tr class="odd">
+<td>CNN vs Siamese: Siamese results by digit and session</td>
+<td>6</td>
+<td>C</td>
+<td>≈ 300</td>
+<td>C’s own outputs</td>
+</tr>
+<tr class="even">
+<td>CNN vs Siamese: side by side</td>
+<td>6</td>
+<td>Maxine (A)</td>
+<td>≈ 400</td>
+<td><code>outputs/comparison.csv</code></td>
+</tr>
+<tr class="odd">
+<td>Conclusion</td>
+<td>8</td>
+<td>Not assigned yet</td>
+<td>≈ 300</td>
+<td>–</td>
+</tr>
+<tr class="even">
+<td><strong>Total</strong></td>
+<td></td>
+<td></td>
+<td><strong>≈ 4,700</strong></td>
+<td>Limit 5,000 (excludes AI use statement, appendices, captions, references)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>House rules</strong></p>
+<ul>
+<li>Edit only your own sections. To change someone else’s, tell them or open a pull request.</li>
+<li>Write in your own words. The brief allows AI for proofreading only, not first drafts.</li>
+<li>Model training lives in scripts (<code>R/</code> or <code>python/</code>) that write to <code>outputs/</code>. The report only reads those files, so it renders in seconds. Commit the scripts too: that is what makes it reproducible.</li>
+<li>Label figures and tables with your section key: <code>eda</code>, <code>split</code>, <code>cnn</code>, <code>siam</code>, <code>tune</code>, <code>comp</code> (e.g.&nbsp;<code>fig-cnn-digit</code>, <code>tbl-siam-metrics</code>). Cross-reference with <code>@fig-cnn-digit</code> and <code>@sec-cnn</code>.</li>
+<li>Numbers in the text come from inline <code>r</code> code reading the output files, never typed by hand. They then stay correct when a model is re-run.</li>
+<li>Guard every chunk that needs a file with <code>#| eval: !expr ready("path")</code>.</li>
+<li>Keep a note of your AI use per task as you go. It goes in the appendix table at the end.</li>
+</ul>
+</div>
+</div>
+<!-- =====================================================================
+     INTRODUCTION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 400 words
+     ===================================================================== -->
+<section id="sec-intro" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet · Task 8 · ≈ 400 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Owner: not assigned yet · Task 8 · ≈ 400 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Must cover:</strong> the two questions (which of 20 known writers wrote this image, and did the same person write these two images?) · the data in one paragraph (20 writers × 5 digits × 5 sessions × 50 replicates, simulated) · why writer identification matters in practice · a one-line roadmap of the report.</p>
+</div>
+</div>
+<!-- =====================================================================
+     DATA AND EXPLORATION  ·  Task 1  ·  OWNER: Maxine (A)  ·  ≈ 550 words
+     ===================================================================== -->
+</section>
+<section id="sec-eda" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Data and exploration</h1>
+<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Maxine (Role A) · Task 1 · ≈ 550 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Owner: Maxine (Role A) · Task 1 · ≈ 550 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> examples across people, digits and sessions · the visible sources of variation · the limitations of this simulated data.</p>
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>What differs between writers? Between sessions of the same writer? Between replicates within one session?</li>
+<li>Which simple features vary most (ink amount, width and height, centre of mass, slant)? Do they vary more by writer or by session?</li>
+<li>How much variance sits between writers, between sessions and within a session (variance decomposition)?</li>
+<li>Do writers separate in a PCA of the raw pixels? Do sessions?</li>
+<li>What makes this data easier or less realistic than real handwriting (simulated, digits 0–4 only, 20 writers, perfectly balanced, clean and centred images)?</li>
+</ul>
+<p><strong>Exhibits (labels to use):</strong> <code>fig-eda-grid</code> writers × digits · <code>fig-eda-sessions</code> one writer and digit across sessions 1–5 · <code>fig-eda-means</code> mean and difference images · <code>fig-eda-features</code> feature boxplots · <code>tbl-eda-variance</code> variance decomposition · <code>fig-eda-pca</code> PCA coloured by writer and session.</p>
+<p><strong>Reads:</strong> <code>data/handwriting.rds</code>. EDA is fast enough to run inside this file.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: grid of example images across writers and digits</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: same writer and digit across the five sessions, a few replicates each</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: mean and difference images</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: ink amount, width/height, centre of mass, slant</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="tbl-eda-variance" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Share of feature variance between writers, between sessions and within sessions.
+</figcaption>
+<div aria-describedby="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: variance decomposition of the features above</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: PCA of pixels</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- =====================================================================
+     EVALUATION DESIGN  ·  Task 4  ·  OWNER: Maxine (A)  ·  ≈ 550 words
+     ===================================================================== -->
+</section>
+<section id="sec-split" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Evaluation design</h1>
+<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Maxine (Role A) · Task 4 · ≈ 550 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Owner: Maxine (Role A) · Task 4 · ≈ 550 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> the chosen train, validation and test strategy and why · what kind of generalisation the evaluation represents · possible leakage or optimistic performance.</p>
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>Main split (both models): sessions 1–3 train, 4 validation, 5 test. What does it test? (A known writer on a new day.)</li>
+<li>Unseen-writer split (Siamese only): 14 / 3 / 3 writers. What does it test? (A person the model has never seen.) Why can the CNN not do this?</li>
+<li>What is validation used for (early stopping, tuning, the Siamese threshold)? Why is test touched only once?</li>
+<li>Optimism experiment: how much better does a simple baseline look on a random image split than on the session-held-out split?</li>
+<li>Leakage risks: near-duplicate replicates within a session, pairs built before splitting, a threshold tuned on test, the same image in training and test pairs.</li>
+<li>Why might results still be optimistic even with a clean split (simulated data, 20 writers)?</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>tbl-split-counts</code> images per split · <code>tbl-split-optimism</code> (or <code>fig-split-optimism</code>) baseline accuracy on the two splits.</p>
+<p><strong>Reads:</strong> <code>data/splits.csv</code>. <strong>Code:</strong> <code>R/00_data.R</code> writes the split; <code>R/optimism_baseline.R</code> runs the experiment.</p>
+</div>
+</div>
+<div id="tbl-split-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Number of images in each split.
+</figcaption>
+<div aria-describedby="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>splits <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/splits.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: counts by split_main and split_writer</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<div id="tbl-split-optimism" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-held-out split.
+</figcaption>
+<div aria-describedby="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: read outputs/optimism_baseline.csv and show the gap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<!-- =====================================================================
+     CNN  ·  Task 2  ·  OWNER: Role B  ·  ≈ 650 words
+     ===================================================================== -->
+</section>
+<section id="sec-cnn" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Writer identification with a CNN</h1>
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 2 · ≈ 650 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Owner: Role B · Task 2 · ≈ 650 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> a prediction task whose response is writer ID · a CNN, built and evaluated · overall writer identification performance · performance compared by digit · what the evaluation measures mean in real-world terms.</p>
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>What exactly is predicted? (Input: one 28 × 28 image. Output: one of 20 known writers, a closed set.) Point to <a href="#sec-split" class="quarto-xref">Section&nbsp;3</a> for the split rather than repeating it.</li>
+<li>Architecture and training: layers, embedding size, optimiser, learning rate, batch size, epochs, early stopping rule.</li>
+<li>Overall test results: accuracy, top-3 accuracy, macro-F1. Which writers get confused with each other?</li>
+<li>Accuracy by digit, with 95% intervals (1,000 test images per digit).</li>
+<li>What do the numbers mean in practice? The chance of naming the right writer for a sample written on a new day; top-3 as a shortlist for a human examiner; the model always names one of the 20, even for an unknown writer.</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>tbl-cnn-arch</code> layers · <code>fig-cnn-training</code> loss and accuracy curves · <code>tbl-cnn-metrics</code> overall metrics · <code>fig-cnn-confusion</code> confusion matrix · <code>fig-cnn-digit</code> accuracy by digit.</p>
+<p><strong>Reads:</strong> <code>outputs/cnn_test_predictions.csv</code>, <code>outputs/cnn_history.csv</code>. <strong>Code:</strong> <code>R/cnn.R</code>.</p>
+</div>
+</div>
+<div id="tbl-cnn-arch" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cnn-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: CNN architecture.
+</figcaption>
+<div aria-describedby="tbl-cnn-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: layer table (can be typed by hand or taken from summary(model))</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: training curves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="tbl-cnn-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cnn-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: CNN writer identification on the session-5 test set.
+</figcaption>
+<div aria-describedby="tbl-cnn-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cnn_pred <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/cnn_test_predictions.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy, top-3 accuracy, macro-F1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: confusion matrix heatmap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- =====================================================================
+     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Role C  ·  ≈ 650 words
+     ===================================================================== -->
+</section>
+<section id="sec-siam" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Same-writer matching with a Siamese network</h1>
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 3 · ≈ 650 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Owner: Role C · Task 3 · ≈ 650 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> a Siamese network that estimates whether two images come from the same writer · contrastive or triplet loss · how training examples are constructed · how matching performance is evaluated.</p>
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>Architecture: shared encoder (same backbone as the CNN), embedding size, distance.</li>
+<li>Loss: contrastive or triplet, the margin, and why.</li>
+<li>Training examples: how positive and negative pairs are sampled, why digit is held fixed, the same/different balance, cross-session positives, and pairs built only after splitting.</li>
+<li>Threshold: chosen on validation pairs by balanced accuracy.</li>
+<li>Test results on <code>data/test_pairs.csv</code>: ROC AUC, equal error rate, balanced accuracy, and distance histograms for same vs different pairs.</li>
+<li>Unseen-writer experiment: the same metrics on the 3 held-out writers.</li>
+<li>What the errors mean: a false accept matches two different writers; a false reject misses a true match. Which matters more depends on the use.</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>fig-siam-pairs</code> example positive and negative pairs · <code>fig-siam-dist</code> distance histograms · <code>fig-siam-roc</code> ROC curves · <code>tbl-siam-metrics</code> main split vs unseen writers.</p>
+<p><strong>Reads:</strong> <code>outputs/siamese_test_distances.csv</code>, <code>outputs/siamese_history.csv</code>. <strong>Code:</strong> <code>R/siamese.R</code> (or <code>python/siamese.py</code>).</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: a few pairs of each kind</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>siam_dist <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/siamese_test_distances.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C: histograms, with the validation threshold marked</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: ROC curve(s)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div id="tbl-siam-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: Siamese matching performance: known writers on a new session vs unseen writers.
+</figcaption>
+<div aria-describedby="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: AUC, EER, balanced accuracy for both settings</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<!-- =====================================================================
+     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: B (CNN) and C (Siamese)
+     ===================================================================== -->
+</section>
+<section id="sec-tune" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Hyperparameter sensitivity</h1>
+<div class="callout callout-style-default callout-warning callout-titled" title="Shared section · Task 5">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Shared section · Task 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. B writes the CNN part and C the Siamese part. Use the same plot style so the two figures read alike.</p>
+</div>
+</div>
+<!-- ---- CNN tuning · OWNER: Role B · ≈ 300 words ---- -->
+<section id="sec-tune-cnn" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="sec-tune-cnn"><span class="header-section-number">6.1</span> CNN</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 5 · ≈ 300 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Owner: Role B · Task 5 · ≈ 300 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>Which 2–3 hyperparameters were varied, over which values, and why those?</li>
+<li>Design: grid or random search, number of configurations, seeds per configuration. Chosen on validation only.</li>
+<li>How much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?</li>
+<li>The chosen configuration and its single test result.</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>fig-tune-cnn</code>. <strong>Reads:</strong> <code>outputs/tuning_cnn.csv</code>. <strong>Code:</strong> <code>R/tune_cnn.R</code>.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tune_cnn <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_cnn.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># B: sensitivity plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- ---- Siamese tuning · OWNER: Role C · ≈ 300 words ---- -->
+</section>
+<section id="sec-tune-siam" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="sec-tune-siam"><span class="header-section-number">6.2</span> Siamese network</h2>
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 5 · ≈ 300 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Owner: Role C · Task 5 · ≈ 300 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>Which hyperparameters were varied (e.g.&nbsp;margin, embedding size, learning rate, pairs per epoch), over which values, and why?</li>
+<li>Design: number of configurations and seeds. Chosen on validation AUC only.</li>
+<li>How much does validation AUC move across each hyperparameter, compared with seed-to-seed noise?</li>
+<li>The chosen configuration and its single test result.</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>fig-tune-siam</code>. <strong>Reads:</strong> <code>outputs/tuning_siamese.csv</code>. <strong>Code:</strong> <code>R/tune_siamese.R</code>.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tune_siam <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_siamese.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C: sensitivity plot, same style as fig-tune-cnn</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- =====================================================================
+     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: B, C, Maxine (A)
+     ===================================================================== -->
+</section>
+</section>
+<section id="sec-comp" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> CNN vs Siamese network: digits and sessions</h1>
+<div class="callout callout-style-default callout-warning callout-titled" title="Shared section · Task 6">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Shared section · Task 6
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The brief asks for:</strong> a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. B and C each report their own model’s digit and session results; Maxine then compares the two side by side.</p>
+</div>
+</div>
+<!-- ---- CNN by digit and session · OWNER: Role B · ≈ 300 words ---- -->
+<section id="sec-comp-cnn" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="sec-comp-cnn"><span class="header-section-number">7.1</span> CNN results by digit and session</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 6 · ≈ 300 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Owner: Role B · Task 6 · ≈ 300 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>Digit-only CNNs (one model per digit): which digit alone identifies writers best and worst?</li>
+<li>Does that ranking match the per-digit accuracy of the full model in <a href="#sec-cnn" class="quarto-xref">Section&nbsp;4</a>?</li>
+<li>Leave-one-session-out: accuracy for each held-out session. Is any session unusual?</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>fig-comp-cnn-digitonly</code> · <code>fig-comp-cnn-loso</code>. <strong>Code:</strong> <code>R/cnn_digit_session.R</code>.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by digit for digit-only models</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by held-out session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- ---- Siamese by digit and session · OWNER: Role C · ≈ 300 words ---- -->
+</section>
+<section id="sec-comp-siam" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="sec-comp-siam"><span class="header-section-number">7.2</span> Siamese results by digit and session</h2>
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 6 · ≈ 300 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Owner: Role C · Task 6 · ≈ 300 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>AUC by digit: which digits separate writers best and worst?</li>
+<li>Same-session vs cross-session positive pairs: how much larger are distances across sessions?</li>
+<li>Cross-digit pairs: does writer identity carry across digits?</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>fig-comp-siam-digit</code> · <code>fig-comp-siam-session</code>. <strong>Reads:</strong> <code>outputs/siamese_test_distances.csv</code>.</p>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: AUC by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: same- vs cross-session distances</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- ---- Side by side · OWNER: Maxine (A) · ≈ 400 words ---- -->
+</section>
+<section id="sec-comp-both" class="level2" data-number="7.3">
+<h2 data-number="7.3" class="anchored" data-anchor-id="sec-comp-both"><span class="header-section-number">7.3</span> Side by side</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Maxine (Role A) · Task 6 · ≈ 400 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Owner: Maxine (Role A) · Task 6 · ≈ 400 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Answer these:</strong></p>
+<ul>
+<li>With one script on the same test pairs, how do the PCA baseline, CNN and Siamese embeddings compare on AUC, equal error rate and nearest-centroid writer accuracy?</li>
+<li>Which model suits which question (identify one of 20 known writers vs verify a pair), and what does each cost (e.g.&nbsp;retraining when a new writer is added)?</li>
+<li>Do the digit rankings agree across the CNN, the Siamese network and the EDA?</li>
+<li>How large is the session gap (same-session vs cross-session) for each model?</li>
+<li>Critical caveats: simulated data, one test session, 20 writers.</li>
+</ul>
+<p><strong>Exhibits:</strong> <code>tbl-comp-summary</code> · <code>fig-comp-digit</code> AUC by digit for PCA, CNN and Siamese.</p>
+<p><strong>Reads:</strong> <code>outputs/comparison.csv</code>. <strong>Code:</strong> <code>R/eval_embeddings.R</code> (reads <code>outputs/cnn_embeddings.csv</code>, <code>outputs/siamese_embeddings.csv</code>, <code>data/test_pairs.csv</code>).</p>
+</div>
+</div>
+<div id="tbl-comp-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test pairs.
+</figcaption>
+<div aria-describedby="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/comparison.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: AUC, EER, nearest-centroid accuracy; same- vs cross-session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</figure>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: AUC by digit, one line or bar group per model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<!-- =====================================================================
+     CONCLUSION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 300 words
+     ===================================================================== -->
+</section>
+</section>
+<section id="sec-conclusion" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Conclusion</h1>
+<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet · Task 8 · ≈ 300 words">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Owner: not assigned yet · Task 8 · ≈ 300 words
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Must cover:</strong> the answer to each question in one or two sentences · the main limitation · what you would do next with more time or real data.</p>
+</div>
+</div>
+</section>
+<section id="references" class="level1 unnumbered">
+<h1 class="unnumbered">References</h1>
+<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Owner: not assigned yet
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Add a <code>references.bib</code> file and <code>bibliography: references.bib</code> to the YAML header, then cite with <code>[@key]</code>. The list appears here automatically.</p>
+</div>
+</div>
+<div id="refs" role="list">
+
+</div>
+<!-- =====================================================================
+     APPENDICES  ·  not counted in the 5,000 words
+     ===================================================================== -->
+</section>
+
+
+
+<div id="quarto-appendix" class="default"><section id="plagiarism-declaration" class="level1 appendix" data-number="9"><h2 class="anchored quarto-appendix-heading"><span class="header-section-number">9</span> Plagiarism declaration</h2><div class="quarto-appendix-contents">
+
+<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Owner: not assigned yet
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Paste the course’s standard plagiarism declaration here, with all three names.</p>
+</div>
+</div>
+</div></section><section id="ai-use-statement" class="level1 appendix" data-number="10"><h2 class="anchored quarto-appendix-heading"><span class="header-section-number">10</span> AI use statement</h2><div class="quarto-appendix-contents">
+
+<div class="callout callout-style-default callout-warning callout-titled" title="Each person fills the rows for their own tasks">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Each person fills the rows for their own tasks
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The brief asks, for each task: (a) what tool you used, (b) what you used it for, (c) if and how you checked its outputs, and (d) how much of what it produced you ended up using.</p>
+</div>
+</div>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Filled by</th>
+<th>(a) Tool</th>
+<th>(b) Used for</th>
+<th>(c) How checked</th>
+<th>(d) How much used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1 Data exploration</td>
+<td>Maxine</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2 CNN</td>
+<td>B</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>3 Siamese network</td>
+<td>C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>4 Evaluation design</td>
+<td>Maxine</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>5 Hyperparameter sensitivity</td>
+<td>B, C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>6 Comparison</td>
+<td>Maxine, B, C</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>7 Git and GitHub</td>
+<td>Maxine</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>8 Report</td>
+<td>All</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>9 GitHub Pages</td>
+<td>Maxine</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,44 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "",
+    "text": "WarningHow to use this file (hidden when show-guidance: false)\n\n\n\nColour = owner. Green = Maxine (Role A, data, splits and comparison) · Blue = Role B (CNN) · Red = Role C (Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).\n\n\n\n\n\n\n\n\n\n\nReport section\nTask\nOwner\nWords\nReads\n\n\n\n\nIntroduction\n8\nNot assigned yet\n≈ 400\n–\n\n\nData and exploration\n1\nMaxine (A)\n≈ 550\ndata/handwriting.rds\n\n\nEvaluation design\n4\nMaxine (A)\n≈ 550\ndata/splits.csv\n\n\nWriter identification with a CNN\n2\nB\n≈ 650\noutputs/cnn_test_predictions.csv, outputs/cnn_history.csv\n\n\nSame-writer matching with a Siamese network\n3\nC\n≈ 650\noutputs/siamese_test_distances.csv, outputs/siamese_history.csv\n\n\nHyperparameter sensitivity: CNN\n5\nB\n≈ 300\noutputs/tuning_cnn.csv\n\n\nHyperparameter sensitivity: Siamese\n5\nC\n≈ 300\noutputs/tuning_siamese.csv\n\n\nCNN vs Siamese: CNN results by digit and session\n6\nB\n≈ 300\nB’s own outputs\n\n\nCNN vs Siamese: Siamese results by digit and session\n6\nC\n≈ 300\nC’s own outputs\n\n\nCNN vs Siamese: side by side\n6\nMaxine (A)\n≈ 400\noutputs/comparison.csv\n\n\nConclusion\n8\nNot assigned yet\n≈ 300\n–\n\n\nTotal\n\n\n≈ 4,700\nLimit 5,000 (excludes AI use statement, appendices, captions, references)\n\n\n\nHouse rules\n\nEdit only your own sections. To change someone else’s, tell them or open a pull request.\nWrite in your own words. The brief allows AI for proofreading only, not first drafts.\nModel training lives in scripts (R/ or python/) that write to outputs/. The report only reads those files, so it renders in seconds. Commit the scripts too: that is what makes it reproducible.\nLabel figures and tables with your section key: eda, split, cnn, siam, tune, comp (e.g. fig-cnn-digit, tbl-siam-metrics). Cross-reference with @fig-cnn-digit and @sec-cnn.\nNumbers in the text come from inline r code reading the output files, never typed by hand. They then stay correct when a model is re-run.\nGuard every chunk that needs a file with #| eval: !expr ready(\"path\").\nKeep a note of your AI use per task as you go. It goes in the appendix table at the end."
+  },
+  {
+    "objectID": "index.html#sec-tune-cnn",
+    "href": "index.html#sec-tune-cnn",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "6.1 CNN",
+    "text": "6.1 CNN\n\n\n\n\n\n\nNoteOwner: Role B · Task 5 · ≈ 300 words\n\n\n\nAnswer these:\n\nWhich 2–3 hyperparameters were varied, over which values, and why those?\nDesign: grid or random search, number of configurations, seeds per configuration. Chosen on validation only.\nHow much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?\nThe chosen configuration and its single test result.\n\nExhibits: fig-tune-cnn. Reads: outputs/tuning_cnn.csv. Code: R/tune_cnn.R.\n\n\n\n\nShow code\ntune_cnn &lt;- read_csv(\"outputs/tuning_cnn.csv\", show_col_types = FALSE)\n# B: sensitivity plot"
+  },
+  {
+    "objectID": "index.html#sec-tune-siam",
+    "href": "index.html#sec-tune-siam",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "6.2 Siamese network",
+    "text": "6.2 Siamese network\n\n\n\n\n\n\nImportantOwner: Role C · Task 5 · ≈ 300 words\n\n\n\nAnswer these:\n\nWhich hyperparameters were varied (e.g. margin, embedding size, learning rate, pairs per epoch), over which values, and why?\nDesign: number of configurations and seeds. Chosen on validation AUC only.\nHow much does validation AUC move across each hyperparameter, compared with seed-to-seed noise?\nThe chosen configuration and its single test result.\n\nExhibits: fig-tune-siam. Reads: outputs/tuning_siamese.csv. Code: R/tune_siamese.R.\n\n\n\n\nShow code\ntune_siam &lt;- read_csv(\"outputs/tuning_siamese.csv\", show_col_types = FALSE)\n# C: sensitivity plot, same style as fig-tune-cnn"
+  },
+  {
+    "objectID": "index.html#sec-comp-cnn",
+    "href": "index.html#sec-comp-cnn",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "7.1 CNN results by digit and session",
+    "text": "7.1 CNN results by digit and session\n\n\n\n\n\n\nNoteOwner: Role B · Task 6 · ≈ 300 words\n\n\n\nAnswer these:\n\nDigit-only CNNs (one model per digit): which digit alone identifies writers best and worst?\nDoes that ranking match the per-digit accuracy of the full model in Section 4?\nLeave-one-session-out: accuracy for each held-out session. Is any session unusual?\n\nExhibits: fig-comp-cnn-digitonly · fig-comp-cnn-loso. Code: R/cnn_digit_session.R.\n\n\n\n\nShow code\n# B: accuracy by digit for digit-only models\n\n\n\n\nShow code\n# B: accuracy by held-out session"
+  },
+  {
+    "objectID": "index.html#sec-comp-siam",
+    "href": "index.html#sec-comp-siam",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "7.2 Siamese results by digit and session",
+    "text": "7.2 Siamese results by digit and session\n\n\n\n\n\n\nImportantOwner: Role C · Task 6 · ≈ 300 words\n\n\n\nAnswer these:\n\nAUC by digit: which digits separate writers best and worst?\nSame-session vs cross-session positive pairs: how much larger are distances across sessions?\nCross-digit pairs: does writer identity carry across digits?\n\nExhibits: fig-comp-siam-digit · fig-comp-siam-session. Reads: outputs/siamese_test_distances.csv.\n\n\n\n\nShow code\n# C: AUC by digit\n\n\n\n\nShow code\n# C: same- vs cross-session distances"
+  },
+  {
+    "objectID": "index.html#sec-comp-both",
+    "href": "index.html#sec-comp-both",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "7.3 Side by side",
+    "text": "7.3 Side by side\n\n\n\n\n\n\nTipOwner: Maxine (Role A) · Task 6 · ≈ 400 words\n\n\n\nAnswer these:\n\nWith one script on the same test pairs, how do the PCA baseline, CNN and Siamese embeddings compare on AUC, equal error rate and nearest-centroid writer accuracy?\nWhich model suits which question (identify one of 20 known writers vs verify a pair), and what does each cost (e.g. retraining when a new writer is added)?\nDo the digit rankings agree across the CNN, the Siamese network and the EDA?\nHow large is the session gap (same-session vs cross-session) for each model?\nCritical caveats: simulated data, one test session, 20 writers.\n\nExhibits: tbl-comp-summary · fig-comp-digit AUC by digit for PCA, CNN and Siamese.\nReads: outputs/comparison.csv. Code: R/eval_embeddings.R (reads outputs/cnn_embeddings.csv, outputs/siamese_embeddings.csv, data/test_pairs.csv).\n\n\n\n\n\nTable 7: PCA baseline, CNN and Siamese embeddings scored on the same test pairs.\n\n\n\nShow code\ncomparison &lt;- read_csv(\"outputs/comparison.csv\", show_col_types = FALSE)\n# Maxine: AUC, EER, nearest-centroid accuracy; same- vs cross-session\n\n\n\n\n\n\nShow code\n# Maxine: AUC by digit, one line or bar group per model"
+  }
+]
