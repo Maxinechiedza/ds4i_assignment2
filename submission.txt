@@ -26,9 +26,9 @@ Each member is responsible for the report sections on their own tasks.
 
 (b) GitHub Pages website
 
-    https://<github-username>.github.io/<repo-name>/
+    https://maxinechiedza.github.io/ds4i_assignment2/
 
 
 (c) GitHub repository
 
-    https://github.com/<github-username>/<repo-name>
+    https://github.com/Maxinechiedza/ds4i_assignment2

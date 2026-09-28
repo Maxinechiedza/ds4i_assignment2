@@ -3,7 +3,8 @@
 STA5073Z Data Science for Industry 2026.
 Group: Maxine Senderayi, Nicole Thomas, [third member].
 
-Website: `https://<github-username>.github.io/<repo-name>/`
+Website: https://maxinechiedza.github.io/ds4i_assignment2/  
+Repository: https://github.com/Maxinechiedza/ds4i_assignment2
 
 ## What lives where
 
