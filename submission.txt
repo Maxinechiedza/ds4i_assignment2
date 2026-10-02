@@ -4,14 +4,14 @@ Image classification with neural networks
 
 (a) Group members and roles
 
-Maxine Senderayi (SNDMAX001) - Role A: data, evaluation design and comparison
-    Data exploration (Task 1), train/validation/test strategy (Task 4),
-    comparison of the CNN and Siamese network (Task 6), and the GitHub
-    repository and website (Tasks 7 and 9).
+Jesse MacDonald (MCDJES006) - Role A: data, evaluation design and comparison
+    Data exploration (Task 1), train/validation/test strategy (Task 4)
+    and comparison of the CNN and Siamese network (Task 6).
 
-Jesse MacDonald (MCDJES006) - Role B: CNN
+Maxine Senderayi (SNDMAX001) - Role B: CNN
     Writer-identification CNN (Task 2), its hyperparameter tuning (Task 5)
-    and its results by digit and session (Task 6).
+    and its results by digit and session (Task 6), plus the GitHub
+    repository and website (Tasks 7 and 9).
 
 Nicole Thomas (THMNIC036) - Role C: Siamese network
     Same-writer Siamese network (Task 3), its hyperparameter tuning

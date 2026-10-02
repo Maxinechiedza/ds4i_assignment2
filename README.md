@@ -1,7 +1,7 @@
 # DS4I Assignment 2: writer identification with neural networks
 
 STA5073Z Data Science for Industry 2026.
-Group: Maxine Senderayi (Role A), Jesse MacDonald (Role B, CNN), Nicole Thomas (Role C, Siamese network).
+Group: Jesse MacDonald (Role A), Maxine Senderayi (Role B, CNN), Nicole Thomas (Role C, Siamese network).
 
 Website: https://maxinechiedza.github.io/ds4i_assignment2/  
 Repository: https://github.com/Maxinechiedza/ds4i_assignment2
@@ -14,11 +14,11 @@ Repository: https://github.com/Maxinechiedza/ds4i_assignment2
 | `_quarto.yml` | Turns the report into a website that renders into `docs/` | Maxine |
 | `docs/` | The rendered website GitHub Pages shows. Never edit by hand. | Made by `quarto render` |
 | `data/handwriting.rds` | The raw data from Amathuba | – |
-| `R/00_data.R` | Loads the data and writes the shared split files | Maxine |
-| `data/splits.csv`, `data/test_pairs.csv` | Shared split and test pairs, written by `R/00_data.R` | Maxine |
-| `R/cnn.R`, `R/tune_cnn.R`, `R/cnn_digit_session.R` | CNN code | Jesse (Role B) |
+| `R/00_data.R` | Loads the data and writes the shared split files | Jesse |
+| `data/splits.csv`, `data/test_pairs.csv` | Shared split and test pairs, written by `R/00_data.R` | Jesse |
+| `R/cnn.R`, `R/tune_cnn.R`, `R/cnn_digit_session.R` | CNN code | Maxine (Role B) |
 | `R/siamese.R`, `R/tune_siamese.R` (or `python/`) | Siamese network code | Nicole (Role C) |
-| `R/optimism_baseline.R`, `R/eval_embeddings.R` | Split experiment and model comparison | Maxine |
+| `R/optimism_baseline.R`, `R/eval_embeddings.R` | Split experiment and model comparison | Jesse |
 | `outputs/` | CSV results that the report reads | Whoever's script writes them |
 | `submission.txt` | Submission deliverable 2: names, roles, links | Maxine |
 
