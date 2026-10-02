@@ -1,7 +1,7 @@
 # DS4I Assignment 2: writer identification with neural networks
 
 STA5073Z Data Science for Industry 2026.
-Group: Maxine Senderayi, Nicole Thomas, [third member].
+Group: Maxine Senderayi (Role A), Jesse MacDonald (Role B, CNN), Nicole Thomas (Role C, Siamese network).
 
 Website: https://maxinechiedza.github.io/ds4i_assignment2/  
 Repository: https://github.com/Maxinechiedza/ds4i_assignment2
@@ -16,8 +16,8 @@ Repository: https://github.com/Maxinechiedza/ds4i_assignment2
 | `data/handwriting.rds` | The raw data from Amathuba | – |
 | `R/00_data.R` | Loads the data and writes the shared split files | Maxine |
 | `data/splits.csv`, `data/test_pairs.csv` | Shared split and test pairs, written by `R/00_data.R` | Maxine |
-| `R/cnn.R`, `R/tune_cnn.R`, `R/cnn_digit_session.R` | CNN code | Role B |
-| `R/siamese.R`, `R/tune_siamese.R` (or `python/`) | Siamese network code | Role C |
+| `R/cnn.R`, `R/tune_cnn.R`, `R/cnn_digit_session.R` | CNN code | Jesse (Role B) |
+| `R/siamese.R`, `R/tune_siamese.R` (or `python/`) | Siamese network code | Nicole (Role C) |
 | `R/optimism_baseline.R`, `R/eval_embeddings.R` | Split experiment and model comparison | Maxine |
 | `outputs/` | CSV results that the report reads | Whoever's script writes them |
 | `submission.txt` | Submission deliverable 2: names, roles, links | Maxine |

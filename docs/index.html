@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Maxine Senderayi">
-<meta name="author" content="Nicole Thomas">
-<meta name="author" content="[Third member]">
-<meta name="dcterms.date" content="2026-09-28">
+<meta name="author" content="Maxine Senderayi (SNDMAX001)">
+<meta name="author" content="Jesse MacDonald (MCDJES006)">
+<meta name="author" content="Nicole Thomas (THMNIC036)">
+<meta name="dcterms.date" content="2026-10-02">
 
 <title>Who wrote this digit? Writer identification with CNNs and Siamese networks – DS4I Assignment 2</title>
 <style>
@@ -185,16 +185,16 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Authors</div>
     <div class="quarto-title-meta-contents">
-             <p>Maxine Senderayi </p>
-             <p>Nicole Thomas </p>
-             <p>[Third member] </p>
+             <p>Maxine Senderayi (SNDMAX001) </p>
+             <p>Jesse MacDonald (MCDJES006) </p>
+             <p>Nicole Thomas (THMNIC036) </p>
           </div>
   </div>
     
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 28, 2026</p>
+      <p class="date">October 2, 2026</p>
     </div>
   </div>
   
@@ -216,7 +216,7 @@ div.csl-indent {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Colour = owner.</strong> Green = Maxine (Role A, data, splits and comparison) · Blue = Role B (CNN) · Red = Role C (Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).</p>
+<p><strong>Colour = owner.</strong> Green = Maxine (Role A, data, splits and comparison) · Blue = Jesse (Role B, CNN) · Red = Nicole (Role C, Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -259,44 +259,44 @@ div.csl-indent {
 <tr class="even">
 <td>Writer identification with a CNN</td>
 <td>2</td>
-<td>B</td>
+<td>Jesse (B)</td>
 <td>≈ 650</td>
 <td><code>outputs/cnn_test_predictions.csv</code>, <code>outputs/cnn_history.csv</code></td>
 </tr>
 <tr class="odd">
 <td>Same-writer matching with a Siamese network</td>
 <td>3</td>
-<td>C</td>
+<td>Nicole (C)</td>
 <td>≈ 650</td>
 <td><code>outputs/siamese_test_distances.csv</code>, <code>outputs/siamese_history.csv</code></td>
 </tr>
 <tr class="even">
 <td>Hyperparameter sensitivity: CNN</td>
 <td>5</td>
-<td>B</td>
+<td>Jesse (B)</td>
 <td>≈ 300</td>
 <td><code>outputs/tuning_cnn.csv</code></td>
 </tr>
 <tr class="odd">
 <td>Hyperparameter sensitivity: Siamese</td>
 <td>5</td>
-<td>C</td>
+<td>Nicole (C)</td>
 <td>≈ 300</td>
 <td><code>outputs/tuning_siamese.csv</code></td>
 </tr>
 <tr class="even">
 <td>CNN vs Siamese: CNN results by digit and session</td>
 <td>6</td>
-<td>B</td>
+<td>Jesse (B)</td>
 <td>≈ 300</td>
-<td>B’s own outputs</td>
+<td>Jesse’s own outputs</td>
 </tr>
 <tr class="odd">
 <td>CNN vs Siamese: Siamese results by digit and session</td>
 <td>6</td>
-<td>C</td>
+<td>Nicole (C)</td>
 <td>≈ 300</td>
-<td>C’s own outputs</td>
+<td>Nicole’s own outputs</td>
 </tr>
 <tr class="even">
 <td>CNN vs Siamese: side by side</td>
@@ -481,18 +481,18 @@ Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-he
 </figure>
 </div>
 <!-- =====================================================================
-     CNN  ·  Task 2  ·  OWNER: Role B  ·  ≈ 650 words
+     CNN  ·  Task 2  ·  OWNER: Jesse (Role B)  ·  ≈ 650 words
      ===================================================================== -->
 </section>
 <section id="sec-cnn" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Writer identification with a CNN</h1>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 2 · ≈ 650 words">
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Jesse (Role B) · Task 2 · ≈ 650 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Role B · Task 2 · ≈ 650 words
+<span class="screen-reader-only">Note</span>Owner: Jesse (Role B) · Task 2 · ≈ 650 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -517,7 +517,7 @@ Table&nbsp;4: CNN architecture.
 <div aria-describedby="tbl-cnn-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: layer table (can be typed by hand or taken from summary(model))</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: layer table (can be typed by hand or taken from summary(model))</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </figure>
@@ -525,7 +525,7 @@ Table&nbsp;4: CNN architecture.
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: training curves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: training curves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="tbl-cnn-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
@@ -537,7 +537,7 @@ Table&nbsp;5: CNN writer identification on the session-5 test set.
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cnn_pred <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/cnn_test_predictions.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy, top-3 accuracy, macro-F1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: accuracy, top-3 accuracy, macro-F1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </figure>
@@ -545,28 +545,28 @@ Table&nbsp;5: CNN writer identification on the session-5 test set.
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: confusion matrix heatmap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: confusion matrix heatmap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: accuracy by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <!-- =====================================================================
-     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Role C  ·  ≈ 650 words
+     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Nicole (Role C)  ·  ≈ 650 words
      ===================================================================== -->
 </section>
 <section id="sec-siam" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Same-writer matching with a Siamese network</h1>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 3 · ≈ 650 words">
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 3 · ≈ 650 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Role C · Task 3 · ≈ 650 words
+<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 3 · ≈ 650 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -588,20 +588,20 @@ Table&nbsp;5: CNN writer identification on the session-5 test set.
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: a few pairs of each kind</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: a few pairs of each kind</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>siam_dist <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/siamese_test_distances.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C: histograms, with the validation threshold marked</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: histograms, with the validation threshold marked</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: ROC curve(s)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: ROC curve(s)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div id="tbl-siam-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
@@ -612,13 +612,13 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 <div aria-describedby="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: AUC, EER, balanced accuracy for both settings</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: AUC, EER, balanced accuracy for both settings</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </figure>
 </div>
 <!-- =====================================================================
-     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: B (CNN) and C (Siamese)
+     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: Jesse (CNN) and Nicole (Siamese)
      ===================================================================== -->
 </section>
 <section id="sec-tune" class="level1" data-number="6">
@@ -633,19 +633,19 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. B writes the CNN part and C the Siamese part. Use the same plot style so the two figures read alike.</p>
+<p><strong>The brief asks for:</strong> a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. Jesse writes the CNN part and Nicole the Siamese part. Use the same plot style so the two figures read alike.</p>
 </div>
 </div>
-<!-- ---- CNN tuning · OWNER: Role B · ≈ 300 words ---- -->
+<!-- ---- CNN tuning · OWNER: Jesse (Role B) · ≈ 300 words ---- -->
 <section id="sec-tune-cnn" class="level2" data-number="6.1">
 <h2 data-number="6.1" class="anchored" data-anchor-id="sec-tune-cnn"><span class="header-section-number">6.1</span> CNN</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 5 · ≈ 300 words">
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Jesse (Role B) · Task 5 · ≈ 300 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Role B · Task 5 · ≈ 300 words
+<span class="screen-reader-only">Note</span>Owner: Jesse (Role B) · Task 5 · ≈ 300 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -663,20 +663,20 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tune_cnn <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_cnn.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># B: sensitivity plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: sensitivity plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<!-- ---- Siamese tuning · OWNER: Role C · ≈ 300 words ---- -->
+<!-- ---- Siamese tuning · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 </section>
 <section id="sec-tune-siam" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-tune-siam"><span class="header-section-number">6.2</span> Siamese network</h2>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 5 · ≈ 300 words">
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 5 · ≈ 300 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Role C · Task 5 · ≈ 300 words
+<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 5 · ≈ 300 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -694,11 +694,11 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 <details class="code-fold">
 <summary>Show code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tune_siam <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_siamese.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C: sensitivity plot, same style as fig-tune-cnn</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: sensitivity plot, same style as fig-tune-cnn</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <!-- =====================================================================
-     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: B, C, Maxine (A)
+     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: Jesse, Nicole, Maxine
      ===================================================================== -->
 </section>
 </section>
@@ -714,19 +714,19 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. B and C each report their own model’s digit and session results; Maxine then compares the two side by side.</p>
+<p><strong>The brief asks for:</strong> a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. Jesse and Nicole each report their own model’s digit and session results; Maxine then compares the two side by side.</p>
 </div>
 </div>
-<!-- ---- CNN by digit and session · OWNER: Role B · ≈ 300 words ---- -->
+<!-- ---- CNN by digit and session · OWNER: Jesse (Role B) · ≈ 300 words ---- -->
 <section id="sec-comp-cnn" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="sec-comp-cnn"><span class="header-section-number">7.1</span> CNN results by digit and session</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Role B · Task 6 · ≈ 300 words">
+<div class="callout callout-style-default callout-note callout-titled" title="Owner: Jesse (Role B) · Task 6 · ≈ 300 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Role B · Task 6 · ≈ 300 words
+<span class="screen-reader-only">Note</span>Owner: Jesse (Role B) · Task 6 · ≈ 300 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -742,26 +742,26 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by digit for digit-only models</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: accuracy by digit for digit-only models</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># B: accuracy by held-out session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: accuracy by held-out session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<!-- ---- Siamese by digit and session · OWNER: Role C · ≈ 300 words ---- -->
+<!-- ---- Siamese by digit and session · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 </section>
 <section id="sec-comp-siam" class="level2" data-number="7.2">
 <h2 data-number="7.2" class="anchored" data-anchor-id="sec-comp-siam"><span class="header-section-number">7.2</span> Siamese results by digit and session</h2>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Role C · Task 6 · ≈ 300 words">
+<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 6 · ≈ 300 words">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Role C · Task 6 · ≈ 300 words
+<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 6 · ≈ 300 words
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -777,13 +777,13 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: AUC by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: AUC by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># C: same- vs cross-session distances</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: same- vs cross-session distances</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <!-- ---- Side by side · OWNER: Maxine (A) · ≈ 400 words ---- -->
@@ -938,7 +938,7 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 </tr>
 <tr class="even">
 <td>2 CNN</td>
-<td>B</td>
+<td>Jesse</td>
 <td></td>
 <td></td>
 <td></td>
@@ -946,7 +946,7 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 </tr>
 <tr class="odd">
 <td>3 Siamese network</td>
-<td>C</td>
+<td>Nicole</td>
 <td></td>
 <td></td>
 <td></td>
@@ -962,7 +962,7 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 </tr>
 <tr class="odd">
 <td>5 Hyperparameter sensitivity</td>
-<td>B, C</td>
+<td>Jesse, Nicole</td>
 <td></td>
 <td></td>
 <td></td>
@@ -970,7 +970,7 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 </tr>
 <tr class="even">
 <td>6 Comparison</td>
-<td>Maxine, B, C</td>
+<td>Maxine, Jesse, Nicole</td>
 <td></td>
 <td></td>
 <td></td>

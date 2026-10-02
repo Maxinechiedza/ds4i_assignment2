@@ -2,9 +2,9 @@
 title: "Who wrote this digit? Writer identification with CNNs and Siamese networks"   # working title – change freely
 subtitle: "STA5073Z Data Science for Industry 2026 · Assignment 2"
 author:
-  - name: "Maxine Senderayi"   # Role A – data, evaluation design and comparison
-  - name: "Nicole Thomas"      # Role B or C – to be confirmed
-  - name: "[Third member]"     # Role B or C – to be confirmed
+  - name: "Maxine Senderayi (SNDMAX001)"   # Role A – data, evaluation design and comparison
+  - name: "Jesse MacDonald (MCDJES006)"    # Role B – CNN
+  - name: "Nicole Thomas (THMNIC036)"      # Role C – Siamese network
 date: today
 format:
   html:
@@ -45,19 +45,19 @@ if (ready("data/handwriting.rds")) {
 
 ::: {.content-visible when-meta="show-guidance"}
 ::: {.callout-warning title="How to use this file (hidden when show-guidance: false)"}
-**Colour = owner.** Green = Maxine (Role A, data, splits and comparison) · Blue = Role B (CNN) · Red = Role C (Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).
+**Colour = owner.** Green = Maxine (Role A, data, splits and comparison) · Blue = Jesse (Role B, CNN) · Red = Nicole (Role C, Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).
 
 | Report section | Task | Owner | Words | Reads |
 |---|---|---|---|---|
 | Introduction | 8 | Not assigned yet | ≈ 400 | – |
 | Data and exploration | 1 | Maxine (A) | ≈ 550 | `data/handwriting.rds` |
 | Evaluation design | 4 | Maxine (A) | ≈ 550 | `data/splits.csv` |
-| Writer identification with a CNN | 2 | B | ≈ 650 | `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv` |
-| Same-writer matching with a Siamese network | 3 | C | ≈ 650 | `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv` |
-| Hyperparameter sensitivity: CNN | 5 | B | ≈ 300 | `outputs/tuning_cnn.csv` |
-| Hyperparameter sensitivity: Siamese | 5 | C | ≈ 300 | `outputs/tuning_siamese.csv` |
-| CNN vs Siamese: CNN results by digit and session | 6 | B | ≈ 300 | B's own outputs |
-| CNN vs Siamese: Siamese results by digit and session | 6 | C | ≈ 300 | C's own outputs |
+| Writer identification with a CNN | 2 | Jesse (B) | ≈ 650 | `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv` |
+| Same-writer matching with a Siamese network | 3 | Nicole (C) | ≈ 650 | `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv` |
+| Hyperparameter sensitivity: CNN | 5 | Jesse (B) | ≈ 300 | `outputs/tuning_cnn.csv` |
+| Hyperparameter sensitivity: Siamese | 5 | Nicole (C) | ≈ 300 | `outputs/tuning_siamese.csv` |
+| CNN vs Siamese: CNN results by digit and session | 6 | Jesse (B) | ≈ 300 | Jesse's own outputs |
+| CNN vs Siamese: Siamese results by digit and session | 6 | Nicole (C) | ≈ 300 | Nicole's own outputs |
 | CNN vs Siamese: side by side | 6 | Maxine (A) | ≈ 400 | `outputs/comparison.csv` |
 | Conclusion | 8 | Not assigned yet | ≈ 300 | – |
 | **Total** | | | **≈ 4,700** | Limit 5,000 (excludes AI use statement, appendices, captions, references) |
@@ -193,13 +193,13 @@ splits <- read_csv("data/splits.csv", show_col_types = FALSE)
 ```
 
 <!-- =====================================================================
-     CNN  ·  Task 2  ·  OWNER: Role B  ·  ≈ 650 words
+     CNN  ·  Task 2  ·  OWNER: Jesse (Role B)  ·  ≈ 650 words
      ===================================================================== -->
 
 # Writer identification with a CNN {#sec-cnn}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Role B · Task 2 · ≈ 650 words"}
+::: {.callout-note title="Owner: Jesse (Role B) · Task 2 · ≈ 650 words"}
 **The brief asks for:** a prediction task whose response is writer ID · a CNN, built and evaluated · overall writer identification performance · performance compared by digit · what the evaluation measures mean in real-world terms.
 
 **Answer these:**
@@ -220,14 +220,14 @@ splits <- read_csv("data/splits.csv", show_col_types = FALSE)
 #| label: tbl-cnn-arch
 #| tbl-cap: "CNN architecture."
 #| eval: false
-# B: layer table (can be typed by hand or taken from summary(model))
+# Jesse: layer table (can be typed by hand or taken from summary(model))
 ```
 
 ```{r}
 #| label: fig-cnn-training
 #| fig-cap: "CNN training and validation loss and accuracy by epoch."
 #| eval: !expr ready("outputs/cnn_history.csv")
-# B: training curves
+# Jesse: training curves
 ```
 
 ```{r}
@@ -235,31 +235,31 @@ splits <- read_csv("data/splits.csv", show_col_types = FALSE)
 #| tbl-cap: "CNN writer identification on the session-5 test set."
 #| eval: !expr ready("outputs/cnn_test_predictions.csv")
 cnn_pred <- read_csv("outputs/cnn_test_predictions.csv", show_col_types = FALSE)
-# B: accuracy, top-3 accuracy, macro-F1
+# Jesse: accuracy, top-3 accuracy, macro-F1
 ```
 
 ```{r}
 #| label: fig-cnn-confusion
 #| fig-cap: "Confusion matrix of true vs predicted writer on the test set."
 #| eval: !expr ready("outputs/cnn_test_predictions.csv")
-# B: confusion matrix heatmap
+# Jesse: confusion matrix heatmap
 ```
 
 ```{r}
 #| label: fig-cnn-digit
 #| fig-cap: "CNN test accuracy by digit, with 95% intervals."
 #| eval: !expr ready("outputs/cnn_test_predictions.csv")
-# B: accuracy by digit
+# Jesse: accuracy by digit
 ```
 
 <!-- =====================================================================
-     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Role C  ·  ≈ 650 words
+     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Nicole (Role C)  ·  ≈ 650 words
      ===================================================================== -->
 
 # Same-writer matching with a Siamese network {#sec-siam}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Role C · Task 3 · ≈ 650 words"}
+::: {.callout-important title="Owner: Nicole (Role C) · Task 3 · ≈ 650 words"}
 **The brief asks for:** a Siamese network that estimates whether two images come from the same writer · contrastive or triplet loss · how training examples are constructed · how matching performance is evaluated.
 
 **Answer these:**
@@ -282,7 +282,7 @@ cnn_pred <- read_csv("outputs/cnn_test_predictions.csv", show_col_types = FALSE)
 #| label: fig-siam-pairs
 #| fig-cap: "Example positive (same writer) and negative (different writer) training pairs."
 #| eval: !expr ready("data/handwriting.rds", "data/test_pairs.csv")
-# C: a few pairs of each kind
+# Nicole: a few pairs of each kind
 ```
 
 ```{r}
@@ -290,41 +290,41 @@ cnn_pred <- read_csv("outputs/cnn_test_predictions.csv", show_col_types = FALSE)
 #| fig-cap: "Embedding distances for same-writer and different-writer test pairs."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
 siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FALSE)
-# C: histograms, with the validation threshold marked
+# Nicole: histograms, with the validation threshold marked
 ```
 
 ```{r}
 #| label: fig-siam-roc
 #| fig-cap: "ROC curves for same-writer matching."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
-# C: ROC curve(s)
+# Nicole: ROC curve(s)
 ```
 
 ```{r}
 #| label: tbl-siam-metrics
 #| tbl-cap: "Siamese matching performance: known writers on a new session vs unseen writers."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
-# C: AUC, EER, balanced accuracy for both settings
+# Nicole: AUC, EER, balanced accuracy for both settings
 ```
 
 <!-- =====================================================================
-     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: B (CNN) and C (Siamese)
+     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: Jesse (CNN) and Nicole (Siamese)
      ===================================================================== -->
 
 # Hyperparameter sensitivity {#sec-tune}
 
 ::: {.content-visible when-meta="show-guidance"}
 ::: {.callout-warning title="Shared section · Task 5"}
-**The brief asks for:** a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. B writes the CNN part and C the Siamese part. Use the same plot style so the two figures read alike.
+**The brief asks for:** a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. Jesse writes the CNN part and Nicole the Siamese part. Use the same plot style so the two figures read alike.
 :::
 :::
 
-<!-- ---- CNN tuning · OWNER: Role B · ≈ 300 words ---- -->
+<!-- ---- CNN tuning · OWNER: Jesse (Role B) · ≈ 300 words ---- -->
 
 ## CNN {#sec-tune-cnn}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Role B · Task 5 · ≈ 300 words"}
+::: {.callout-note title="Owner: Jesse (Role B) · Task 5 · ≈ 300 words"}
 **Answer these:**
 
 - Which 2–3 hyperparameters were varied, over which values, and why those?
@@ -341,15 +341,15 @@ siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FAL
 #| fig-cap: "CNN validation accuracy across hyperparameter values (points = seeds)."
 #| eval: !expr ready("outputs/tuning_cnn.csv")
 tune_cnn <- read_csv("outputs/tuning_cnn.csv", show_col_types = FALSE)
-# B: sensitivity plot
+# Jesse: sensitivity plot
 ```
 
-<!-- ---- Siamese tuning · OWNER: Role C · ≈ 300 words ---- -->
+<!-- ---- Siamese tuning · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 
 ## Siamese network {#sec-tune-siam}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Role C · Task 5 · ≈ 300 words"}
+::: {.callout-important title="Owner: Nicole (Role C) · Task 5 · ≈ 300 words"}
 **Answer these:**
 
 - Which hyperparameters were varied (e.g. margin, embedding size, learning rate, pairs per epoch), over which values, and why?
@@ -366,27 +366,27 @@ tune_cnn <- read_csv("outputs/tuning_cnn.csv", show_col_types = FALSE)
 #| fig-cap: "Siamese validation AUC across hyperparameter values (points = seeds)."
 #| eval: !expr ready("outputs/tuning_siamese.csv")
 tune_siam <- read_csv("outputs/tuning_siamese.csv", show_col_types = FALSE)
-# C: sensitivity plot, same style as fig-tune-cnn
+# Nicole: sensitivity plot, same style as fig-tune-cnn
 ```
 
 <!-- =====================================================================
-     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: B, C, Maxine (A)
+     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: Jesse, Nicole, Maxine
      ===================================================================== -->
 
 # CNN vs Siamese network: digits and sessions {#sec-comp}
 
 ::: {.content-visible when-meta="show-guidance"}
 ::: {.callout-warning title="Shared section · Task 6"}
-**The brief asks for:** a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. B and C each report their own model's digit and session results; Maxine then compares the two side by side.
+**The brief asks for:** a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. Jesse and Nicole each report their own model's digit and session results; Maxine then compares the two side by side.
 :::
 :::
 
-<!-- ---- CNN by digit and session · OWNER: Role B · ≈ 300 words ---- -->
+<!-- ---- CNN by digit and session · OWNER: Jesse (Role B) · ≈ 300 words ---- -->
 
 ## CNN results by digit and session {#sec-comp-cnn}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Role B · Task 6 · ≈ 300 words"}
+::: {.callout-note title="Owner: Jesse (Role B) · Task 6 · ≈ 300 words"}
 **Answer these:**
 
 - Digit-only CNNs (one model per digit): which digit alone identifies writers best and worst?
@@ -401,22 +401,22 @@ tune_siam <- read_csv("outputs/tuning_siamese.csv", show_col_types = FALSE)
 #| label: fig-comp-cnn-digitonly
 #| fig-cap: "Test accuracy of CNNs trained on a single digit."
 #| eval: !expr ready("outputs/cnn_digit_only.csv")
-# B: accuracy by digit for digit-only models
+# Jesse: accuracy by digit for digit-only models
 ```
 
 ```{r}
 #| label: fig-comp-cnn-loso
 #| fig-cap: "CNN accuracy for each held-out session (leave-one-session-out)."
 #| eval: !expr ready("outputs/cnn_loso.csv")
-# B: accuracy by held-out session
+# Jesse: accuracy by held-out session
 ```
 
-<!-- ---- Siamese by digit and session · OWNER: Role C · ≈ 300 words ---- -->
+<!-- ---- Siamese by digit and session · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 
 ## Siamese results by digit and session {#sec-comp-siam}
 
 ::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Role C · Task 6 · ≈ 300 words"}
+::: {.callout-important title="Owner: Nicole (Role C) · Task 6 · ≈ 300 words"}
 **Answer these:**
 
 - AUC by digit: which digits separate writers best and worst?
@@ -431,14 +431,14 @@ tune_siam <- read_csv("outputs/tuning_siamese.csv", show_col_types = FALSE)
 #| label: fig-comp-siam-digit
 #| fig-cap: "Siamese matching AUC by digit."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
-# C: AUC by digit
+# Nicole: AUC by digit
 ```
 
 ```{r}
 #| label: fig-comp-siam-session
 #| fig-cap: "Distances for same-writer pairs from the same session vs different sessions."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
-# C: same- vs cross-session distances
+# Nicole: same- vs cross-session distances
 ```
 
 <!-- ---- Side by side · OWNER: Maxine (A) · ≈ 400 words ---- -->
@@ -522,11 +522,11 @@ The brief asks, for each task: (a) what tool you used, (b) what you used it for,
 | Task | Filled by | (a) Tool | (b) Used for | (c) How checked | (d) How much used |
 |---|---|---|---|---|---|
 | 1 Data exploration | Maxine | | | | |
-| 2 CNN | B | | | | |
-| 3 Siamese network | C | | | | |
+| 2 CNN | Jesse | | | | |
+| 3 Siamese network | Nicole | | | | |
 | 4 Evaluation design | Maxine | | | | |
-| 5 Hyperparameter sensitivity | B, C | | | | |
-| 6 Comparison | Maxine, B, C | | | | |
+| 5 Hyperparameter sensitivity | Jesse, Nicole | | | | |
+| 6 Comparison | Maxine, Jesse, Nicole | | | | |
 | 7 Git and GitHub | Maxine | | | | |
 | 8 Report | All | | | | |
 | 9 GitHub Pages | Maxine | | | | |
