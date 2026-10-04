@@ -112,44 +112,213 @@ if (ready("data/handwriting.rds")) {
 
 ```{r}
 #| label: fig-eda-grid
-#| fig-cap: "One image per writer (rows) and digit (columns), session 1."
+#| fig-cap: "One image per writer (rows) and digit (columns), session 1, replicate 1."
+#| fig-height: 10
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: grid of example images across writers and digits
+show_img <- function(m, col = gray.colors(256, start = 1, end = 0), zlim = c(0, 255), ...) {
+  image(t(m)[, nrow(m):1], col = col, axes = FALSE, asp = 1, zlim = zlim, ...)
+}
+
+par(mfrow = c(20, 5), mar = c(0.1, 0.1, 0.1, 0.1), oma = c(1, 3, 2, 1))
+for (w in 1:20) {
+  for (d in 0:4) {
+    idx <- which(meta$person_id == w & meta$digit == d & meta$session == 1 & meta$replicate == 1)
+    show_img(hw$images[idx, , , 1])
+    if (w == 1) mtext(d, side = 3, line = 0.2, cex = 0.7)
+    if (d == 0) mtext(w, side = 2, line = 0.2, cex = 0.6, las = 1)
+  }
+}
+mtext("digit", side = 3, outer = TRUE, line = 0.7, cex = 0.9)
+mtext("writer", side = 2, outer = TRUE, line = 1.7, cex = 0.9)
 ```
 
 ```{r}
 #| label: fig-eda-sessions
-#| fig-cap: "One writer's digits across sessions 1–5."
+#| fig-cap: "Writer 1's digit 0, four replicates (rows) across sessions 1–5 (columns). Later sessions show a visibly heavier, more angular stroke."
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: same writer and digit across the five sessions, a few replicates each
+w0 <- 1; d0 <- 0
+par(mfrow = c(4, 5), mar = c(0.1, 0.1, 0.1, 0.1), oma = c(1, 3, 2, 1))
+for (r in 1:4) {
+  for (s in 1:5) {
+    idx <- which(meta$person_id == w0 & meta$digit == d0 & meta$session == s & meta$replicate == r)
+    show_img(hw$images[idx, , , 1])
+    if (r == 1) mtext(paste("s", s), side = 3, line = 0.2, cex = 0.7)
+    if (s == 1) mtext(paste("r", r), side = 2, line = 0.2, cex = 0.7)
+  }
+}
 ```
 
 ```{r}
 #| label: fig-eda-means
-#| fig-cap: "Mean image per writer, and session mean minus writer mean."
+#| fig-cap: "Top: mean digit-0 image per writer. Bottom: four writers' session means minus their own overall mean (blue = less ink, red = more ink than that writer's average), showing how each writer's stroke shifts across sessions."
+#| fig-height: 9
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: mean and difference images
+div_col <- colorRampPalette(c("steelblue", "white", "firebrick"))(256)
+mean_image <- function(idx) apply(hw$images[idx, , , 1], c(2, 3), mean)
+
+par(mfrow = c(8, 5), mar = c(0.1, 0.1, 0.6, 0.1), oma = c(1, 3, 1, 1))
+
+# writer means, digit 0 (restricting to one digit avoids blurring different digit shapes together)
+for (w in 1:20) {
+  idx <- which(meta$person_id == w & meta$digit == 0)
+  show_img(mean_image(idx))
+  mtext(w, side = 3, line = 0.1, cex = 0.55)
+}
+
+# session-drift diff images for 4 representative writers x 5 sessions, digit 0
+sel_writers <- c(1, 6, 13, 18)
+diffs <- list()
+for (w in sel_writers) {
+  idx_w <- which(meta$person_id == w & meta$digit == 0)
+  writer_mean <- mean_image(idx_w)
+  for (s in 1:5) {
+    idx_s <- which(meta$person_id == w & meta$digit == 0 & meta$session == s)
+    diffs[[paste(w, s)]] <- mean_image(idx_s) - writer_mean
+  }
+}
+zmax <- max(abs(unlist(diffs)))
+for (w in sel_writers) {
+  for (s in 1:5) {
+    show_img(diffs[[paste(w, s)]], col = div_col, zlim = c(-zmax, zmax))
+    if (w == sel_writers[1]) mtext(paste("s", s), side = 3, line = 0.1, cex = 0.6)
+    if (s == 1) mtext(paste("w", w), side = 2, line = 0.1, cex = 0.6)
+  }
+}
 ```
 
 ```{r}
 #| label: fig-eda-features
-#| fig-cap: "Simple image features by writer, session and digit."
+#| fig-cap: "Five simple image features, boxplotted by writer, session and digit. Ink, width, height and slant separate clearly by writer; none separate visibly by session; digit mostly affects ink, width and height (shape), as expected."
+#| fig-height: 8
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: ink amount, width/height, centre of mass, slant
+rows_idx <- 1:28; cols_idx <- 1:28
+n_img <- dim(hw$images)[1]
+feat <- tibble(
+  image_id = meta$image_id,
+  ink = NA_real_, width = NA_real_, height = NA_real_,
+  com_x = NA_real_, com_y = NA_real_, slant = NA_real_
+)
+for (i in seq_len(n_img)) {
+  m <- hw$images[i, , , 1]
+  ink <- sum(m)
+  rs <- which(rowSums(m) > 0); cs <- which(colSums(m) > 0)
+  feat$ink[i] <- ink
+  feat$width[i] <- if (length(cs)) max(cs) - min(cs) + 1 else NA
+  feat$height[i] <- if (length(rs)) max(rs) - min(rs) + 1 else NA
+  cx <- sum(m * matrix(cols_idx, 28, 28, byrow = TRUE)) / ink
+  cy <- sum(m * matrix(rows_idx, 28, 28)) / ink
+  feat$com_x[i] <- cx
+  feat$com_y[i] <- cy
+  mu11 <- sum(m * outer(rows_idx - cy, cols_idx - cx)) / ink
+  mu02 <- sum(m * (rows_idx - cy)^2) / ink
+  feat$slant[i] <- if (mu02 > 0) mu11 / mu02 else NA
+}
+feat <- feat %>%
+  mutate(centroid_shift = sqrt((com_x - 14.5)^2 + (com_y - 14.5)^2)) %>%
+  select(image_id, ink, width, height, centroid_shift, slant) %>%
+  left_join(meta, by = "image_id")
+
+level_order <- as.character(sort(unique(c(feat$person_id, feat$session, feat$digit))))
+feat_long <- feat %>%
+  pivot_longer(c(ink, width, height, centroid_shift, slant), names_to = "feature", values_to = "value")
+plot_df <- bind_rows(
+  feat_long %>% transmute(feature, value, group_var = "writer", group_value = person_id),
+  feat_long %>% transmute(feature, value, group_var = "session", group_value = session),
+  feat_long %>% transmute(feature, value, group_var = "digit", group_value = digit)
+) %>%
+  mutate(
+    group_value = factor(group_value, levels = level_order),
+    feature = factor(feature, levels = c("ink", "width", "height", "centroid_shift", "slant")),
+    group_var = factor(group_var, levels = c("writer", "session", "digit"))
+  )
+
+ggplot(plot_df, aes(group_value, value)) +
+  geom_boxplot(outlier.size = 0.3, linewidth = 0.3) +
+  facet_grid(feature ~ group_var, scales = "free") +
+  theme_minimal(base_size = 9) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, size = 6)) +
+  labs(x = NULL, y = NULL)
 ```
 
 ```{r}
 #| label: tbl-eda-variance
-#| tbl-cap: "Share of feature variance between writers, between sessions and within sessions."
+#| tbl-cap: "Share of feature variance (after removing each feature's digit mean) between writers, between sessions within a writer, and within a session."
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: variance decomposition of the features above
+# Each feature is first centred on its own digit mean, so digit-shape
+# differences (which dominate raw ink/width/height) don't swamp the
+# writer/session decomposition we actually care about here.
+feat_c <- feat %>%
+  group_by(digit) %>%
+  mutate(across(c(ink, width, height, centroid_shift, slant), ~ . - mean(.), .names = "resid_{.col}")) %>%
+  ungroup()
+
+decompose_one <- function(resid_col) {
+  d <- feat_c %>% transmute(resid = .data[[resid_col]], person_id = factor(person_id), session = factor(session))
+  m <- aov(resid ~ person_id / session, data = d)
+  ss <- summary(m)[[1]][["Sum Sq"]]
+  tibble(
+    `Between writer %` = round(ss[1] / sum(ss) * 100, 1),
+    `Between session %` = round(ss[2] / sum(ss) * 100, 1),
+    `Within session %` = round(ss[3] / sum(ss) * 100, 1)
+  )
+}
+feature_cols <- c("resid_ink", "resid_width", "resid_height", "resid_centroid_shift", "resid_slant")
+var_tbl <- map_dfr(feature_cols, decompose_one) %>%
+  mutate(Feature = c("ink", "width", "height", "centroid_shift", "slant"), .before = 1)
+knitr::kable(var_tbl)
 ```
 
 ```{r}
 #| label: fig-eda-pca
-#| fig-cap: "First two principal components of the pixels, coloured by writer and by session."
+#| fig-cap: "PCA of raw pixels. Top: a 5,000-image sample across all digits — clusters correspond to digit shape, not writer, and writers don't visibly separate once digit is mixed in. Bottom: restricting to digit 0 only (removing the digit-shape confound) reveals tight, clearly separated per-writer clusters, which are not further split by session — writer style is a strong pixel-level signal once digit is held fixed."
+#| fig-height: 9
 #| eval: !expr ready("data/handwriting.rds")
 # Jesse: PCA of pixels
+library(patchwork) # only used in this chunk; not added to shared setup
+set.seed(2026)
+idx_all <- sample(nrow(meta), 5000)
+X_all <- matrix(hw$images[idx_all, , , 1], nrow = length(idx_all))
+pc_all <- prcomp(X_all, center = TRUE, scale. = FALSE, rank. = 10)
+ve_all <- round(100 * pc_all$sdev[1:2]^2 / sum(pc_all$sdev^2), 1)
+
+idx_d0 <- which(meta$digit == 0)
+X_d0 <- matrix(hw$images[idx_d0, , , 1], nrow = length(idx_d0))
+pc_d0 <- prcomp(X_d0, center = TRUE, scale. = FALSE, rank. = 10)
+ve_d0 <- round(100 * pc_d0$sdev[1:2]^2 / sum(pc_d0$sdev^2), 1)
+
+df_all <- meta[idx_all, ] %>% mutate(PC1 = pc_all$x[, 1], PC2 = pc_all$x[, 2])
+df_d0  <- meta[idx_d0, ]  %>% mutate(PC1 = pc_d0$x[, 1],  PC2 = pc_d0$x[, 2])
+
+p1 <- ggplot(df_all, aes(PC1, PC2, color = factor(digit))) +
+  geom_point(size = 0.6, alpha = 0.5) +
+  labs(color = "digit", title = "All digits, coloured by digit",
+       x = paste0("PC1 (", ve_all[1], "%)"), y = paste0("PC2 (", ve_all[2], "%)")) +
+  theme_minimal(base_size = 9)
+
+p2 <- ggplot(df_all, aes(PC1, PC2, color = factor(person_id))) +
+  geom_point(size = 0.6, alpha = 0.5) +
+  labs(color = "writer", title = "All digits, coloured by writer",
+       x = paste0("PC1 (", ve_all[1], "%)"), y = paste0("PC2 (", ve_all[2], "%)")) +
+  theme_minimal(base_size = 9) + theme(legend.position = "none")
+
+p3 <- ggplot(df_d0, aes(PC1, PC2, color = factor(person_id))) +
+  geom_point(size = 0.8, alpha = 0.6) +
+  labs(color = "writer", title = "Digit 0 only, coloured by writer",
+       x = paste0("PC1 (", ve_d0[1], "%)"), y = paste0("PC2 (", ve_d0[2], "%)")) +
+  theme_minimal(base_size = 9) + theme(legend.position = "none")
+
+p4 <- ggplot(df_d0, aes(PC1, PC2, color = factor(session))) +
+  geom_point(size = 0.8, alpha = 0.6) +
+  labs(color = "session", title = "Digit 0 only, coloured by session",
+       x = paste0("PC1 (", ve_d0[1], "%)"), y = paste0("PC2 (", ve_d0[2], "%)")) +
+  theme_minimal(base_size = 9)
+
+(p1 + p2) / (p3 + p4)
 ```
 
 <!-- =====================================================================
@@ -179,10 +348,17 @@ if (ready("data/handwriting.rds")) {
 
 ```{r}
 #| label: tbl-split-counts
-#| tbl-cap: "Number of images in each split."
+#| tbl-cap: "Number of images in each split. split_main is the session-based split used by both models (sessions 1-3/4/5 = train/val/test); split_writer is the writer-held-out split (14/3/3 writers = train/val/test), used only for the Siamese network's unseen-writer experiment."
 #| eval: !expr ready("data/splits.csv")
 splits <- read_csv("data/splits.csv", show_col_types = FALSE)
 # Jesse: counts by split_main and split_writer
+bind_rows(
+  splits %>% count(split = split_main) %>% mutate(strategy = "split_main (session-based)"),
+  splits %>% count(split = split_writer) %>% mutate(strategy = "split_writer (writer-based)")
+) %>%
+  mutate(split = factor(split, levels = c("train", "val", "test"))) %>%
+  pivot_wider(names_from = split, values_from = n) %>%
+  knitr::kable()
 ```
 
 ```{r}
