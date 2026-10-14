@@ -386,46 +386,207 @@ bind_rows(
 - Accuracy by digit, with 95% intervals (1,000 test images per digit).
 - What do the numbers mean in practice? The chance of naming the right writer for a sample written on a new day; top-3 as a shortlist for a human examiner; the model always names one of the 20, even for an unknown writer.
 
-**Exhibits:** `tbl-cnn-arch` layers · `fig-cnn-training` loss and accuracy curves · `tbl-cnn-metrics` overall metrics · `fig-cnn-confusion` confusion matrix · `fig-cnn-digit` accuracy by digit.
+**Exhibits:** `tbl-cnn-arch` layers · `fig-cnn-training` loss and accuracy curves · `tbl-cnn-metrics` overall metrics · `fig-cnn-digit` accuracy by digit · `fig-cnn-confusion` confusion matrix · `fig-cnn-writer` accuracy by writer.
 
-**Reads:** `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv`. **Code:** `R/cnn.R`.
+**Reads:** `outputs/cnn_test_predictions.csv`, `outputs/cnn2_test_predictions.csv`, `outputs/cnn_test_scores.csv`, `outputs/cnn_history.csv`, `outputs/cnn2_history.csv`. **Code:** `R/cnn.R`, `R/cnn_functions.R`.
 :::
 :::
 
+```{r}
+#| label: cnn-helpers
+#| include: false
+# OWNER: Maxine (B). Files and helpers for the CNN results (Tasks 2 and 5).
+cnn_files <- c("outputs/cnn_test_predictions.csv", "outputs/cnn2_test_predictions.csv",
+               "outputs/cnn_test_scores.csv", "outputs/cnn_history.csv", "outputs/cnn2_history.csv")
+model_labels <- c(cnn3 = "3 conv layers (best CNN, shared backbone)", cnn2 = "2 conv layers (original encoder)")
+
+pct <- function(x, digits = 1) paste0(format(round(100 * x, digits), nsmall = digits), "%")
+
+# Macro-F1: the F1 score of each writer, averaged with equal weight per writer
+macro_f1 <- function(true, pred, classes = 1:20) {
+  mean(sapply(classes, function(k) {
+    tp <- sum(pred == k & true == k)
+    fp <- sum(pred == k & true != k)
+    fn <- sum(pred != k & true == k)
+    if (tp == 0) 0 else 2 * tp / (2 * tp + fp + fn)
+  }))
+}
+```
+
+```{r}
+#| label: cnn-results
+#| include: false
+#| eval: !expr ready(cnn_files)
+# Maxine: test results of the two final CNNs (written by R/cnn.R)
+cnn_pred <- bind_rows(
+  read_csv("outputs/cnn_test_predictions.csv",  show_col_types = FALSE) %>% mutate(model = "cnn3"),
+  read_csv("outputs/cnn2_test_predictions.csv", show_col_types = FALSE) %>% mutate(model = "cnn2")
+) %>%
+  mutate(correct = true_writer == predicted_writer)
+
+cnn_scores <- read_csv("outputs/cnn_test_scores.csv", show_col_types = FALSE)
+
+cnn_hist <- bind_rows(
+  read_csv("outputs/cnn_history.csv",  show_col_types = FALSE) %>% mutate(model = "cnn3"),
+  read_csv("outputs/cnn2_history.csv", show_col_types = FALSE) %>% mutate(model = "cnn2")
+) %>%
+  filter(!is.na(value))   
+
+# The best validation-accuracy epoch = the weights early stopping kept
+best_val <- cnn_hist %>%
+  filter(metric == "accuracy", data == "validation") %>%
+  group_by(model) %>%
+  slice_max(value, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  select(model, best_epoch = epoch, val_accuracy = value)
+
+# McNemar's test: on the SAME test images, do the two models make different
+# numbers of errors? Only images where exactly one model is right count.
+paired  <- cnn_pred %>%
+  select(image_id, model, correct) %>%
+  pivot_wider(names_from = model, values_from = correct)
+mcnemar <- mcnemar.test(table(cnn3 = paired$cnn3, cnn2 = paired$cnn2))
+
+by_model <- cnn_pred %>%
+  group_by(model) %>%
+  summarise(acc = mean(correct), top3 = mean(top3_hit), .groups = "drop")
+
+cnn_key <- list(
+  acc3      = by_model$acc[by_model$model == "cnn3"],
+  acc2      = by_model$acc[by_model$model == "cnn2"],
+  top3_3    = by_model$top3[by_model$model == "cnn3"],
+  top3_2    = by_model$top3[by_model$model == "cnn2"],
+  val3      = best_val$val_accuracy[best_val$model == "cnn3"],
+  val2      = best_val$val_accuracy[best_val$model == "cnn2"],
+  only3     = sum(paired$cnn3 & !paired$cnn2),   # images only the 3-layer model gets right
+  only2     = sum(!paired$cnn3 & paired$cnn2),   # images only the 2-layer model gets right
+  mcnemar_p = mcnemar$p.value,
+  # most often confused writer pairs (both directions combined), 3-layer model
+  top_pairs = cnn_pred %>%
+    filter(model == "cnn3", !correct) %>%
+    mutate(a = pmin(true_writer, predicted_writer), b = pmax(true_writer, predicted_writer)) %>%
+    count(a, b, sort = TRUE) %>%
+    head(5)
+)
+```
+
+CNNs model with 2 layers and 3 layers were build to predict writer ID. @tbl-cnn-arch show the shape, layers and parameters of the two models. Note that the 2 layer model is different from the 3 layer model with an additional max pooling 2x2 and convolution layer with 64 filters. Both models output 20 unit probabilities using the softmax function which shows the response is one of 20 writers. The 3-layer model is the shared backbone of the Siamese network. 
 ```{r}
 #| label: tbl-cnn-arch
-#| tbl-cap: "CNN architecture."
-#| eval: false
-# Maxine: layer table (can be typed by hand or taken from summary(model))
+#| tbl-cap: "Layers of the final CNNs. The 3-layer model (26 036 parameters) is the backbone shared with the Siamese network; the 2-layer model stops after the second convolution (6 516 parameters). Both use learning rate 0.001, batch size 64, categorical cross-entropy, and early stopping on validation accuracy (patience 10, at most 150 epochs)."
+tribble(
+  ~Layer,                                  ~`Output shape`,     ~Parameters,             ~`In 2-layer model`,
+  "Input: one 28 × 28 image",              "28 × 28 × 1",       "0",                     "yes",
+  "Convolution, 16 filters 3 × 3, ReLU",   "26 × 26 × 16",      "160",                   "yes",
+  "Max pooling 2 × 2",                     "13 × 13 × 16",      "0",                     "yes",
+  "Convolution, 32 filters 3 × 3, ReLU",   "11 × 11 × 32",      "4 640",                 "yes",
+  "Max pooling 2 × 2",                     "5 × 5 × 32",        "0",                     "no",
+  "Convolution, 64 filters 3 × 3, ReLU",   "3 × 3 × 64",        "18 496",                "no",
+  "Global average pooling",                "64 (2-layer: 32)",  "0",                     "yes",
+  "Dense embedding, 32 units, ReLU",       "32",                "2 080 (2-layer: 1 056)", "yes",
+  "Dropout 0.3 (training only)",           "32",                "0",                     "yes",
+  "Dense, 20 units, softmax",              "20",                "660",                   "yes"
+) %>%
+  knitr::kable(align = "llrl")
 ```
 
+The CNNs were trained using session 1 - 3 and validated with session 4. At validation, the kept epoch was that with the best validation accuracy, it is shown by the grey dashed lines in @fig-cnn-training. Orange lines are training and blue lines are validation. The 3 layer model at training seem to memorise session 1 - 3, reaching 92% accuracy at epoch 13 but validation accuracy stays near `r pct(cnn_key$val3)` indicating it is accurate compared to the 2 layer model but overconfident. Validation loss  for the 3 layer model bottoms out at epoch 3, then climbs steadily to a validation loss of 2.51 at epoch 13. The 2 layer model is underfitting, at training it reaches 60% accuracy at epoch 60 and validation accuracy steadily increases. Its validation loss follows the same pattern as the 3 layer model but slower as it bottoms out at epoch 45 with validation loss of 1.69, then rises to 1.82 at the kept epoch 60. 
 ```{r}
 #| label: fig-cnn-training
-#| fig-cap: "CNN training and validation loss and accuracy by epoch."
-#| eval: !expr ready("outputs/cnn_history.csv")
-# Maxine: training curves
+#| fig-cap: "Training (sessions 1–3) and validation (session 4) curves of the two final CNNs. The dashed line marks the epoch with the best validation accuracy, whose weights were kept."
+#| fig-height: 6
+#| eval: !expr ready(cnn_files)
+cnn_hist %>%
+  mutate(model  = factor(model_labels[model], levels = model_labels),
+         metric = recode(metric, accuracy = "Accuracy", loss = "Loss", top3 = "Top-3 accuracy"),
+         data   = recode(data, training = "Training (sessions 1–3)", validation = "Validation (session 4)")) %>%
+  ggplot(aes(epoch, value, colour = data)) +
+  geom_line() +
+  geom_point(size = 0.6) +
+  geom_vline(data = best_val %>% mutate(model = factor(model_labels[model], levels = model_labels)),
+             aes(xintercept = best_epoch), linetype = "dashed", colour = "grey50") +
+  facet_grid(metric ~ model, scales = "free") +
+  labs(x = "Epoch", y = NULL, colour = NULL) +
+  theme(legend.position = "bottom")
 ```
+
 
 ```{r}
 #| label: tbl-cnn-metrics
-#| tbl-cap: "CNN writer identification on the session-5 test set."
-#| eval: !expr ready("outputs/cnn_test_predictions.csv")
-cnn_pred <- read_csv("outputs/cnn_test_predictions.csv", show_col_types = FALSE)
-# Maxine: accuracy, top-3 accuracy, macro-F1
-```
-
-```{r}
-#| label: fig-cnn-confusion
-#| fig-cap: "Confusion matrix of true vs predicted writer on the test set."
-#| eval: !expr ready("outputs/cnn_test_predictions.csv")
-# Maxine: confusion matrix heatmap
+#| tbl-cap: "Writer identification on the 5 000 session-5 test images (250 per writer). Guessing would give 5% accuracy and 15% top-3 accuracy. Validation accuracy is on session 4 at the kept epoch."
+#| eval: !expr ready(cnn_files)
+cnn_pred %>%
+  group_by(model) %>%
+  summarise(n = n(), acc = mean(correct), top3 = mean(top3_hit),
+            f1 = macro_f1(true_writer, predicted_writer), .groups = "drop") %>%
+  mutate(lo = acc - 1.96 * sqrt(acc * (1 - acc) / n),
+         hi = acc + 1.96 * sqrt(acc * (1 - acc) / n)) %>%
+  left_join(cnn_scores %>% select(model, loss), by = "model") %>%
+  left_join(best_val, by = "model") %>%
+  mutate(model = factor(model_labels[model], levels = model_labels)) %>%
+  arrange(model) %>%
+  transmute(Model                    = model,
+            `Test accuracy (95% CI)` = sprintf("%s (%s–%s)", pct(acc), pct(lo), pct(hi)),
+            `Top-3 accuracy`         = pct(top3),
+            `Macro-F1`               = sprintf("%.3f", f1),
+            `Test loss`              = sprintf("%.2f", loss),
+            `Validation accuracy`    = pct(val_accuracy)) %>%
+  knitr::kable()
 ```
 
 ```{r}
 #| label: fig-cnn-digit
-#| fig-cap: "CNN test accuracy by digit, with 95% intervals."
-#| eval: !expr ready("outputs/cnn_test_predictions.csv")
-# Maxine: accuracy by digit
+#| fig-cap: "Test accuracy by digit, with 95% intervals (1 000 test images per digit)."
+#| fig-height: 3.5
+#| eval: !expr ready(cnn_files)
+cnn_pred %>%
+  group_by(model, digit) %>%
+  summarise(n = n(), acc = mean(correct), .groups = "drop") %>%
+  mutate(se    = sqrt(acc * (1 - acc) / n),
+         model = factor(model_labels[model], levels = model_labels)) %>%
+  ggplot(aes(factor(digit), acc, colour = model)) +
+  geom_pointrange(aes(ymin = acc - 1.96 * se, ymax = acc + 1.96 * se),
+                  position = position_dodge(width = 0.4)) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Digit", y = "Test accuracy (session 5)", colour = NULL) +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: fig-cnn-confusion
+#| fig-cap: "Confusion matrix of the 3-layer CNN on the test set. Each row is one true writer's 250 images; shading shows the share assigned to each predicted writer, so a perfect model would only shade the diagonal."
+#| fig-height: 5.5
+#| eval: !expr ready(cnn_files)
+cnn_pred %>%
+  filter(model == "cnn3") %>%
+  count(true_writer, predicted_writer) %>%
+  complete(true_writer = 1:20, predicted_writer = 1:20, fill = list(n = 0)) %>%
+  group_by(true_writer) %>%
+  mutate(share = n / sum(n)) %>%
+  ungroup() %>%
+  ggplot(aes(factor(predicted_writer), factor(true_writer, levels = 20:1), fill = share)) +
+  geom_tile(colour = "white", linewidth = 0.2) +
+  scale_fill_gradient(low = "white", high = "#08306b", labels = scales::percent) +
+  labs(x = "Predicted writer", y = "True writer", fill = "Share of the\ntrue writer's\nimages") +
+  coord_equal()
+```
+
+```{r}
+#| label: fig-cnn-writer
+#| fig-cap: "3-layer CNN: test accuracy and top-3 accuracy for each writer, sorted by accuracy."
+#| fig-height: 4.5
+#| eval: !expr ready(cnn_files)
+cnn_pred %>%
+  filter(model == "cnn3") %>%
+  group_by(true_writer) %>%
+  summarise(Accuracy = mean(correct), `Top-3 accuracy` = mean(top3_hit), .groups = "drop") %>%
+  mutate(writer = fct_reorder(factor(true_writer), Accuracy)) %>%
+  pivot_longer(c(Accuracy, `Top-3 accuracy`), names_to = "measure") %>%
+  ggplot(aes(value, writer, colour = measure)) +
+  geom_point(size = 2) +
+  scale_x_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Share of the writer's 250 test images", y = "Writer", colour = NULL) +
+  theme(legend.position = "bottom")
 ```
 
 <!-- =====================================================================
@@ -508,16 +669,93 @@ siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FAL
 - How much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?
 - The chosen configuration and its single test result.
 
-**Exhibits:** `fig-tune-cnn`. **Reads:** `outputs/tuning_cnn.csv`. **Code:** `R/tune_cnn.R`.
+**Exhibits:** `fig-tune-cnn` sensitivity plot · `tbl-tune-cnn` effect vs seed noise · `tbl-tune-stopping` stopping rules. **Reads:** `outputs/tuning_cnn.csv`, `outputs/tuning_cnn_valacc_p5.csv`, `outputs/tuning_cnn_valacc_p10.csv`, `outputs/tuning_cnn_valacc_p10_e150.csv`. **Code:** `R/tune_cnn.R`, `R/tune_cnn_valacc.R`.
 :::
 :::
 
+
 ```{r}
 #| label: fig-tune-cnn
-#| fig-cap: "CNN validation accuracy across hyperparameter values (points = seeds)."
+#| fig-cap: "CNN validation accuracy (session 4) when one hyperparameter is changed at a time from the baseline (2 convolution layers, dropout 0.3, learning rate 0.001). Grey points are the three seeds; black points and lines are their means. Early stopping on validation loss (patience 5, at most 50 epochs)."
+#| fig-height: 3.2
 #| eval: !expr ready("outputs/tuning_cnn.csv")
 tune_cnn <- read_csv("outputs/tuning_cnn.csv", show_col_types = FALSE)
-# Maxine: sensitivity plot
+
+# The baseline runs are the middle value of every hyperparameter, so each
+# hyperparameter's comparison = its own runs + the baseline runs.
+tune_long <- bind_rows(
+  tune_cnn %>% filter(varied %in% c("baseline", "n_conv"))        %>% mutate(hyperparameter = "Convolution layers", value = n_conv),
+  tune_cnn %>% filter(varied %in% c("baseline", "learning_rate")) %>% mutate(hyperparameter = "Learning rate",      value = learning_rate),
+  tune_cnn %>% filter(varied %in% c("baseline", "dropout"))       %>% mutate(hyperparameter = "Dropout rate",       value = dropout)
+)
+
+tune_long %>%
+  mutate(label = fct_reorder(format(value, scientific = FALSE, drop0trailing = TRUE), value)) %>%
+  ggplot(aes(label, val_accuracy)) +
+  geom_point(colour = "grey55", position = position_jitter(width = 0.06, height = 0, seed = 1)) +
+  stat_summary(fun = mean, geom = "line", aes(group = 1)) +
+  stat_summary(fun = mean, geom = "point", size = 2.5) +
+  facet_wrap(~ hyperparameter, scales = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL, y = "Validation accuracy (session 4)")
+```
+
+```{r}
+#| label: tbl-tune-cnn
+#| tbl-cap: "How much each hyperparameter moves mean validation accuracy, compared with seed noise: the standard deviation from re-running the same configuration with a different seed, pooled over all seven configurations."
+#| eval: !expr ready("outputs/tuning_cnn.csv")
+seed_sd <- tune_cnn %>%
+  group_by(varied, n_conv, dropout, learning_rate) %>%
+  summarise(v = var(val_accuracy), .groups = "drop") %>%
+  summarise(sqrt(mean(v))) %>%
+  pull()
+
+tune_long %>%
+  group_by(hyperparameter, value) %>%
+  summarise(mean_acc = mean(val_accuracy), .groups = "drop") %>%
+  group_by(hyperparameter) %>%
+  summarise(Values                    = paste(format(value, scientific = FALSE, drop0trailing = TRUE), collapse = ", "),
+            `Mean accuracy per value` = paste(pct(mean_acc), collapse = ", "),
+            range                     = max(mean_acc) - min(mean_acc),
+            .groups = "drop") %>%
+  mutate(`Range of means`     = pct(range),
+         `Range / seed noise` = sprintf("%.1f", range / seed_sd)) %>%
+  select(Hyperparameter = hyperparameter, Values, `Mean accuracy per value`,
+         `Range of means`, `Range / seed noise`) %>%
+  knitr::kable()
+```
+
+```{r}
+#| label: tbl-tune-stopping
+#| tbl-cap: "Validation accuracy of the 2- and 3-layer CNNs (mean ± SD over 3 seeds) under four early-stopping rules, and the 3-layer advantage in standard errors. The final models use the last rule."
+#| eval: !expr ready("outputs/tuning_cnn.csv", "outputs/tuning_cnn_valacc_p5.csv", "outputs/tuning_cnn_valacc_p10.csv", "outputs/tuning_cnn_valacc_p10_e150.csv")
+rule_files <- c(
+  "Validation loss, patience 5, max 50 epochs"       = "outputs/tuning_cnn.csv",
+  "Validation accuracy, patience 5, max 50 epochs"   = "outputs/tuning_cnn_valacc_p5.csv",
+  "Validation accuracy, patience 10, max 50 epochs"  = "outputs/tuning_cnn_valacc_p10.csv",
+  "Validation accuracy, patience 10, max 150 epochs" = "outputs/tuning_cnn_valacc_p10_e150.csv"
+)
+
+stop_runs <- imap_dfr(rule_files, function(file, rule) {
+  read_csv(file, show_col_types = FALSE) %>%
+    filter(varied %in% c("baseline", "n_conv"), n_conv %in% c(2, 3)) %>%
+    mutate(rule = rule) %>%
+    select(rule, n_conv, seed, val_accuracy, epochs_run)
+}) %>%
+  mutate(rule = factor(rule, levels = names(rule_files)))
+
+stop_runs %>%
+  group_by(rule, n_conv) %>%
+  summarise(m = mean(val_accuracy), s = sd(val_accuracy), ep = mean(epochs_run), .groups = "drop") %>%
+  pivot_wider(names_from = n_conv, values_from = c(m, s, ep)) %>%
+  mutate(se = sqrt(s_3^2 / 3 + s_2^2 / 3)) %>%
+  transmute(`Stopping rule`       = rule,
+            `2 layers`            = sprintf("%s ± %s", pct(m_2), pct(s_2)),
+            `3 layers`            = sprintf("%s ± %s", pct(m_3), pct(s_3)),
+            `Mean epochs (2 / 3)` = sprintf("%.0f / %.0f", ep_2, ep_3),
+            `3-layer gain`        = pct(m_3 - m_2),
+            `Gain / SE`           = sprintf("%.1f", (m_3 - m_2) / se)) %>%
+  knitr::kable()
 ```
 
 <!-- ---- Siamese tuning · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
