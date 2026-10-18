@@ -54,10 +54,12 @@ if (run_curve_check) {
 
 # ---- 3. Final models -------------------------------------------------------
 
-fit_final <- function(n_conv, seed = 2026) {
+# Extra settings (e.g. dropout = 0.5, l2 = 1e-4) go straight to build_cnn(); with
+# none, this is exactly the model already trained and saved.
+fit_final <- function(n_conv, seed = 2026, ...) {
   clear_session()
   set_random_seed(seed)
-  model <- build_cnn(n_conv = n_conv)
+  model <- build_cnn(n_conv = n_conv, ...)
   history <- model %>% fit(
     train$x, train$y,
     validation_data = list(val$x, val$y),
