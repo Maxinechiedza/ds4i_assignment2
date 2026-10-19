@@ -1086,7 +1086,28 @@ On overall matching, the ranking in @tbl-comp-summary is CNN > Siamese > PCA: th
 
 That split points to which model suits which question. If the task is "which of these 20 known writers wrote this", the CNN is the right tool and the cheaper one to run at inference (one forward pass, one softmax); if it ever needs to cover a 21st writer, though, it needs retraining from scratch, because the output layer itself is sized to 20 classes. If the task is "did the same person write these two samples" -- including for someone never seen in training -- the Siamese network is the right tool, exactly because it was designed and evaluated for that (@sec-siam's unseen-writer experiment); its cost is a less interpretable per-writer signal, as the centroid result above shows.
 
-The digit rankings mostly agree across methods: digit 0 is at or near the best-matching digit for both the CNN and the Siamese network in @fig-comp-digit, broadly consistent with the EDA's digit-0-restricted PCA (@fig-eda-pca) showing clean writer clusters for that digit. The session gap -- how much farther apart same-writer pairs sit when they come from different sessions rather than the same one -- is present for every model: cross-session distances exceed same-session distances by a factor of `r sprintf("%.1f", get_val(comp_session, "pca", "gap_ratio"))`x for the PCA baseline, `r sprintf("%.1f", get_val(comp_session, "cnn", "gap_ratio"))`x for the CNN, and `r sprintf("%.1f", get_val(comp_session, "siamese", "gap_ratio"))`x for the Siamese network, confirming that the session drift documented in @sec-eda costs every model some matching accuracy, not just the simplest one.
+```{r}
+#| label: comp-cnn-digit-vals
+#| include: false
+#| eval: !expr ready("outputs/cnn_digit_only.csv", "outputs/cnn_loso_by_digit.csv", "outputs/cnn_loso.csv")
+# Cross-check against Maxine's digit-only/LOSO CNN results (@sec-comp-cnn):
+# does "which digit carries the most writer information" agree once a digit
+# is tested alone, not just read off the matching/full-model rankings above?
+digit_only_acc <- read_csv("outputs/cnn_digit_only.csv", show_col_types = FALSE) %>%
+  group_by(digit) %>% summarise(acc = mean(test_accuracy), .groups = "drop")
+full_model_acc <- read_csv("outputs/cnn_loso_by_digit.csv", show_col_types = FALSE) %>%
+  filter(test_session == 5) %>%
+  group_by(digit) %>% summarise(acc = mean(accuracy), .groups = "drop")
+digit0_gap <- full_model_acc$acc[full_model_acc$digit == 0] - digit_only_acc$acc[digit_only_acc$digit == 0]
+
+loso_session_acc <- read_csv("outputs/cnn_loso.csv", show_col_types = FALSE) %>%
+  group_by(test_session) %>% summarise(acc = mean(test_accuracy), .groups = "drop")
+loso_range <- max(loso_session_acc$acc) - min(loso_session_acc$acc)
+```
+
+The digit rankings mostly agree across methods, but with one genuine disagreement worth flagging rather than smoothing over. Digit 0 is at or near the best-matching digit for both the CNN and the Siamese network in @fig-comp-digit, broadly consistent with the EDA's digit-0-restricted PCA (@fig-eda-pca) showing clean writer clusters for that digit -- and it is also the full CNN's single best digit by raw test accuracy (@fig-cnn-digit, @sec-cnn). Yet @sec-comp-cnn's digit-only CNNs rank digit 0 *worst* on its own (`r pct(digit_only_acc$acc[digit_only_acc$digit == 0])` accuracy, versus `r pct(max(digit_only_acc$acc))` for the best digit trained alone). So "which digit carries the most writer information" has two different answers depending on whether the question is "most useful once you already know the writer's other digits" (digit 0: full-model accuracy jumps `r pct(digit0_gap)` points above its digit-only score, @sec-comp-cnn) or "most informative completely on its own" (digit 0 is not it). Matching (this section) and identification (@sec-comp-cnn) are consistent on the former reading, not the latter -- a reminder that "digit rankings agree" depends on exactly what's being ranked.
+
+The session gap -- how much farther apart same-writer pairs sit when they come from different sessions rather than the same one -- is present for every model: cross-session distances exceed same-session distances by a factor of `r sprintf("%.1f", get_val(comp_session, "pca", "gap_ratio"))`x for the PCA baseline, `r sprintf("%.1f", get_val(comp_session, "cnn", "gap_ratio"))`x for the CNN, and `r sprintf("%.1f", get_val(comp_session, "siamese", "gap_ratio"))`x for the Siamese network, confirming that the session drift documented in @sec-eda costs every model some matching accuracy, not just the simplest one. The CNN's own leave-one-session-out results in @sec-comp-cnn back this up from a completely different angle: holding out identification accuracy, rather than matching distance, swings by `r pct(loso_range)` points depending on which session plays "the new day" -- independent evidence, from a classification rather than a distance measure, that session is a real source of difficulty rather than an artefact of how this section happens to score it.
 
 As with @sec-split, these numbers should be read with the data's limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) -- a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.
 
