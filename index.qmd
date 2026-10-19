@@ -37,6 +37,9 @@ theme_set(theme_minimal(base_size = 11))
 # so the report still renders before that file has been produced.
 ready <- function(...) all(file.exists(c(...)))
 
+# Shared formatting helper (also redefined identically in the CNN section).
+pct <- function(x, digits = 1) paste0(format(round(100 * x, digits), nsmall = digits), "%")
+
 if (ready("data/handwriting.rds")) {
   hw   <- readRDS("data/handwriting.rds")
   meta <- hw$metadata
@@ -110,6 +113,8 @@ if (ready("data/handwriting.rds")) {
 :::
 :::
 
+The data is 25,000 simulated images: 20 writers x 5 digits x 5 sessions x 50 replicates, each a 28x28 greyscale digit. @fig-eda-grid lines up one writer per row and one digit per column: digit shape dominates what the eye sees, but within a row each writer keeps a visibly consistent stroke width and slant across all five digits -- the thing we are hoping a model can key on. @fig-eda-sessions follows one writer's digit across the five sessions: the stroke becomes visibly heavier and more angular from session 1 to session 5, a gradual drift rather than a jump, and the same drift direction holds for every replicate shown within a session. Replicates *within* one session, by contrast, look close to identical -- the main source of within-session variation is small pixel-level noise, not a different way of writing the digit.
+
 ```{r}
 #| label: fig-eda-grid
 #| fig-cap: "One image per writer (rows) and digit (columns), session 1, replicate 1."
@@ -150,6 +155,8 @@ for (r in 1:4) {
 }
 ```
 
+The session drift in @fig-eda-sessions is a whole-writer effect, not specific to one digit or replicate. @fig-eda-means makes the same point a different way: the top row is each writer's own average digit-0 image (writers are visibly distinct once you average out replicate noise), and the bottom block subtracts each of four writers' own overall mean from their session means. The resulting blue/red difference images drift in a consistent direction session by session for a given writer, but that direction differs from writer to writer -- session is a shared *kind* of variation (everyone's stroke changes a little over time) but not a shared *direction*, which is why a model trained on sessions 1-3 still has to generalise to session 5 rather than just learning "session 5 looks like X".
+
 ```{r}
 #| label: fig-eda-means
 #| fig-cap: "Top: mean digit-0 image per writer. Bottom: four writers' session means minus their own overall mean (blue = less ink, red = more ink than that writer's average), showing how each writer's stroke shifts across sessions."
@@ -188,6 +195,8 @@ for (w in sel_writers) {
   }
 }
 ```
+
+Eyeballing images only goes so far, so @fig-eda-features boxplots five simple numeric features (ink amount, bounding-box width and height, how far the centre of mass sits from the image centre, and a slant estimate) against writer, session and digit in turn. Ink, width, height and slant all separate clearly by writer -- each writer occupies a fairly narrow, writer-specific band on these features -- while none of the five show a visible shift by session, at least at this coarse, whole-distribution level (the session drift in @fig-eda-sessions and @fig-eda-means is real but evidently too subtle to show up as a shift in these five summary numbers; a model looking at raw pixels can still pick it up). Digit mostly moves ink, width and height, which is just digit shape (a 1 uses less ink than a 0), not writer style.
 
 ```{r}
 #| label: fig-eda-features
@@ -274,6 +283,15 @@ knitr::kable(var_tbl)
 ```
 
 ```{r}
+#| label: eda-variance-vals
+#| include: false
+vt <- var_tbl %>% rename(writer_pct = `Between writer %`, session_pct = `Between session %`, within_pct = `Within session %`)
+get_pct <- function(feature, col) vt[[col]][vt$Feature == feature]
+```
+
+@tbl-eda-variance puts a number on that impression with a variance decomposition (each feature is first centred on its own digit mean, so digit shape doesn't swamp the writer/session split). Slant is the most writer-specific feature, at `r get_pct("slant", "writer_pct")`% of its variance sitting between writers and only `r get_pct("slant", "within_pct")`% left as within-session noise; ink and width are similar, with `r get_pct("ink", "writer_pct")`% and `r get_pct("width", "writer_pct")`% between writers respectively. Centroid shift is the exception: only `r get_pct("centroid_shift", "writer_pct")`% of its variance is between writers, with the rest (`r get_pct("centroid_shift", "within_pct")`%) within a single session -- these images are already centred during generation, so where the centre of mass lands is mostly replicate noise rather than a writer trait. Across every feature, the between-session share stays small (at most `r max(vt$session_pct)`%), confirming that the session effect visible in @fig-eda-sessions is real but subtle next to the writer effect -- good news for a model trying to recognise a writer on a new day.
+
+```{r}
 #| label: fig-eda-pca
 #| fig-cap: "PCA of raw pixels. Top: a 5,000-image sample across all digits — clusters correspond to digit shape, not writer, and writers don't visibly separate once digit is mixed in. Bottom: restricting to digit 0 only (removing the digit-shape confound) reveals tight, clearly separated per-writer clusters, which are not further split by session — writer style is a strong pixel-level signal once digit is held fixed."
 #| fig-height: 9
@@ -321,6 +339,10 @@ p4 <- ggplot(df_d0, aes(PC1, PC2, color = factor(session))) +
 (p1 + p2) / (p3 + p4)
 ```
 
+@fig-eda-pca shows what the writer signal costs you when digit isn't held fixed. With all five digits mixed together (top row), the first two principal components explain only `r ve_all[1]`% and `r ve_all[2]`% of pixel variance and visibly separate by digit, not writer -- digit shape is simply the biggest source of pixel-level variation, and it swamps the writer signal in a plain PCA. Restricting to digit 0 only (bottom row) removes that confound: PC1 and PC2 now explain more variance (`r ve_d0[1]`% and `r ve_d0[2]`%) and writers form tight, clearly separated clusters, which are *not* further split by session -- so once digit is held fixed, writer style is a strong linear signal even in raw pixels, and the CNN and Siamese network (which both condition on a single digit at a time) should have an easier time than this unconditional PCA suggests.
+
+This is simulated data, and that matters for how far these conclusions travel. The images are clean, centred and noise-free in a way real handwriting scans rarely are; there are only 20 writers and 5 digits (0-4, not the full 0-9), each perfectly balanced with 50 replicates per writer/digit/session; and "session" here is a single simulated drift process rather than genuinely different pens, moods or paper found in real handwriting collected over time. The patterns above -- a dominant, stable writer signal and a small, gradual session effect -- are the patterns this particular simulator was built to produce, so they should be read as "this method can find writer-specific signal when it is there and well-behaved," not as evidence of how well it would do on messier, real handwriting.
+
 <!-- =====================================================================
      EVALUATION DESIGN  ·  Task 4  ·  OWNER: Jesse (A)  ·  ≈ 550 words
      ===================================================================== -->
@@ -346,6 +368,8 @@ p4 <- ggplot(df_d0, aes(PC1, PC2, color = factor(session))) +
 :::
 :::
 
+Both models share one main split, `split_main`, built by session rather than by image: sessions 1-3 are train, session 4 is validation, and session 5 is held out entirely for test (@tbl-split-counts). Splitting by session rather than randomly means every test image comes from a session the model never trained on, for a writer it *has* seen -- the evaluation this represents is "can you recognise a known writer's handwriting on a new day", which is the realistic use case (a person enrols once, then is checked against later samples) and the harder, more honest version of the writer-identification question. The CNN uses only `split_main`: it is a fixed 20-class classifier, so there's no meaningful way to test it on a writer it never trained on -- the output layer itself only has units for the 20 training writers. The Siamese network additionally uses `split_writer`, which instead holds out whole writers (14 train / 3 val / 3 test), because its job -- deciding whether two images match -- doesn't require having seen either writer during training; this split tests the harder, more general question of whether the learned notion of "same writer" transfers to people the model has never encountered.
+
 ```{r}
 #| label: tbl-split-counts
 #| tbl-cap: "Number of images in each split. split_main is the session-based split used by both models (sessions 1-3/4/5 = train/val/test); split_writer is the writer-held-out split (14/3/3 writers = train/val/test), used only for the Siamese network's unseen-writer experiment."
@@ -361,12 +385,30 @@ bind_rows(
   knitr::kable()
 ```
 
+Validation (session 4) is where every tunable choice gets made: early stopping for both models, the hyperparameter search in @sec-tune, and the Siamese network's same/different distance threshold. Test (session 5) is touched exactly once, after all of that is fixed, so the reported test numbers are an honest estimate of performance on genuinely new data rather than a number that has itself been optimised.
+
+Splitting by session guards against one obvious leak -- near-duplicate replicates of the same writer, digit and session landing on both sides of the split -- but it's worth asking how much that guard is actually worth. @tbl-split-optimism runs a simple baseline (a k-nearest-neighbour classifier on five basic image features: ink, width, height, centroid shift and slant) twice: once on a random image split of the same size, which lets replicates leak freely across train and test, and once on the proper session-held-out split.
+
 ```{r}
 #| label: tbl-split-optimism
-#| tbl-cap: "Baseline writer accuracy on a random image split vs the session-held-out split."
+#| tbl-cap: "Baseline writer accuracy on a random image split vs the session-held-out split. The baseline is a k-NN classifier (k = 15) on five simple per-image features, standardised on the training features of each split."
 #| eval: !expr ready("outputs/optimism_baseline.csv")
-# Jesse: read outputs/optimism_baseline.csv and show the gap
+optimism <- read_csv("outputs/optimism_baseline.csv", show_col_types = FALSE)
+optimism %>%
+  transmute(Split = str_to_title(split), Description = description,
+            `Train n` = n_train, `Test n` = n_test, Accuracy = pct(accuracy)) %>%
+  knitr::kable()
 ```
+
+```{r}
+#| label: split-optimism-vals
+#| include: false
+opt_gap <- optimism$accuracy[optimism$split == "random"] - optimism$accuracy[optimism$split == "session"]
+```
+
+The gap is large: the same baseline reaches `r pct(optimism$accuracy[optimism$split == "random"])` accuracy on the random split but only `r pct(optimism$accuracy[optimism$split == "session"])` on the session split -- a `r pct(opt_gap)` drop from nothing but the split strategy, with the model, features and train/test sizes held fixed. That gap is the optimism a random split would have bought this baseline: with random assignment, a near-identical replicate of the test writer's handwriting (same writer, same digit, often the same session) is likely sitting in the training set, so the "test" accuracy mostly measures memorisation of a very similar example rather than generalisation to new handwriting.
+
+Three leakage risks matter for both models even with the session split in place. First, test pairs and splits must be built in the right order: `data/test_pairs.csv` is built from `data/splits.csv` (@sec-split, `R/00_data.R`), not the reverse, so no pair can straddle train and test. Second, the Siamese threshold is chosen on validation pairs only (@sec-siam) and never touched again once test pairs are scored, so it can't be quietly fitted to the test set. Third, the same image never appears in more than one pair-role that would let information leak between train and test test pairs, since pairs are drawn after the split and only from the appropriate session(s). Even so, results may still read as somewhat optimistic: with only 20 writers the models are solving a much easier closed-set problem than real-world identification among thousands of candidates, and the data is simulated, so the writer and session effects are exactly the effects the simulator was built to produce (@sec-eda) -- a real-world, cross-scanner, cross-pen deployment would likely see a larger session-style gap than the one measured here.
 
 <!-- =====================================================================
      CNN  ·  Task 2  ·  OWNER: Maxine (Role B)  ·  ≈ 650 words
@@ -871,24 +913,71 @@ tune_siam <- read_csv("outputs/tuning_siamese.csv", show_col_types = FALSE)
 
 **Exhibits:** `tbl-comp-summary` · `fig-comp-digit` AUC by digit for PCA, CNN and Siamese.
 
-**Reads:** `outputs/comparison.csv`. **Code:** `R/eval_embeddings.R` (reads `outputs/cnn_embeddings.csv`, `outputs/siamese_embeddings.csv`, `data/test_pairs.csv`).
+**Reads:** `outputs/comparison.csv`. **Code:** `R/eval_embeddings.R` (reads `outputs/cnn3_embeddings.csv`, `outputs/siamese_embeddings.csv`, `data/test_pairs.csv`).
 :::
 :::
 
+@sec-cnn and @sec-siam each score their model the way it was trained for: the CNN as a 20-way classifier, the Siamese network as a same/different matcher. To compare them directly, `R/eval_embeddings.R` scores all three embedding spaces -- a PCA baseline (the top 32 principal components of pixels, fitted on a training-session sample, giving the CNN and Siamese embeddings a non-learned reference point), the CNN's 32-unit embedding layer, and the Siamese encoder's 32-unit embedding -- on the exact same `data/test_pairs.csv` pairs and the exact same nearest-centroid identification task (classify a session-5 test image to whichever training writer's embedding centroid it's closest to).
+
+```{r}
+#| label: comp-prep
+#| include: false
+comparison <- read_csv("outputs/comparison.csv", show_col_types = FALSE)
+model_names <- c(pca = "PCA baseline", cnn = "CNN embedding", siamese = "Siamese embedding")
+
+comp_overall <- comparison %>%
+  filter(scope == "overall") %>%
+  select(model, metric, value) %>%
+  pivot_wider(names_from = metric, values_from = value)
+
+comp_session <- comparison %>%
+  filter(str_starts(scope, "session:")) %>%
+  mutate(session = str_remove(scope, "session:")) %>%
+  select(model, session, value) %>%
+  pivot_wider(names_from = session, values_from = value) %>%
+  mutate(gap_ratio = cross / same)
+
+get_val <- function(df, m, col) df[[col]][df$model == m]
+```
+
 ```{r}
 #| label: tbl-comp-summary
-#| tbl-cap: "PCA baseline, CNN and Siamese embeddings scored on the same test pairs."
+#| tbl-cap: "PCA baseline, CNN and Siamese embeddings scored on the same 1,400 test pairs. AUC and EER are for same-writer matching; nearest-centroid accuracy is session-5 writer identification against training-writer centroids (chance = 5%)."
 #| eval: !expr ready("outputs/comparison.csv")
-comparison <- read_csv("outputs/comparison.csv", show_col_types = FALSE)
-# Jesse: AUC, EER, nearest-centroid accuracy; same- vs cross-session
+comp_overall %>%
+  mutate(model = factor(model_names[model], levels = model_names)) %>%
+  arrange(model) %>%
+  transmute(Model = model,
+            `ROC AUC` = sprintf("%.3f", auc),
+            `Equal error rate` = pct(eer),
+            `Nearest-centroid accuracy` = pct(nc_accuracy)) %>%
+  knitr::kable()
 ```
 
 ```{r}
 #| label: fig-comp-digit
-#| fig-cap: "Matching AUC by digit for the PCA baseline, CNN and Siamese network."
+#| fig-cap: "Matching AUC by digit (same-digit test pairs only) for the PCA baseline, CNN and Siamese network."
+#| fig-height: 3.2
 #| eval: !expr ready("outputs/comparison.csv")
-# Jesse: AUC by digit, one line or bar group per model
+comparison %>%
+  filter(str_starts(scope, "digit:")) %>%
+  mutate(digit = str_remove(scope, "digit:"),
+         model = factor(model_names[model], levels = model_names)) %>%
+  ggplot(aes(digit, value, colour = model, group = model)) +
+  geom_line() +
+  geom_point(size = 2) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  labs(x = "Digit", y = "Matching AUC", colour = NULL) +
+  theme(legend.position = "bottom")
 ```
+
+On overall matching, the ranking in @tbl-comp-summary is CNN > Siamese > PCA: the CNN embedding reaches `r sprintf("%.3f", get_val(comp_overall, "cnn", "auc"))` AUC against the Siamese network's `r sprintf("%.3f", get_val(comp_overall, "siamese", "auc"))` and the PCA baseline's `r sprintf("%.3f", get_val(comp_overall, "pca", "auc"))`, with equal error rate telling the same story in reverse. That's a little surprising given the Siamese network is the one directly trained to minimise exactly this kind of pairwise distance -- the gap is explained by `data/test_pairs.csv` including cross-digit pairs, which the Siamese network never saw in training (it was trained on same-digit pairs only, @sec-siam) and matches much worse on; restricted to same-digit pairs, @fig-comp-digit shows the Siamese network is competitive with or ahead of the CNN on most digits. Nearest-centroid identification tells a different story again: the CNN embedding reaches `r pct(get_val(comp_overall, "cnn", "nc_accuracy"))` accuracy, clearly ahead of the PCA baseline's `r pct(get_val(comp_overall, "pca", "nc_accuracy"))`, while the Siamese embedding trails both at `r pct(get_val(comp_overall, "siamese", "nc_accuracy"))` -- well above the 5% chance rate, but evidently the Siamese network's contrastive training pulls same-writer pairs together locally without necessarily arranging all 20 writers into compact, well-separated global clusters the way a 20-class softmax classifier is directly pushed to.
+
+That split points to which model suits which question. If the task is "which of these 20 known writers wrote this", the CNN is the right tool and the cheaper one to run at inference (one forward pass, one softmax); if it ever needs to cover a 21st writer, though, it needs retraining from scratch, because the output layer itself is sized to 20 classes. If the task is "did the same person write these two samples" -- including for someone never seen in training -- the Siamese network is the right tool, exactly because it was designed and evaluated for that (@sec-siam's unseen-writer experiment); its cost is a less interpretable per-writer signal, as the centroid result above shows.
+
+The digit rankings mostly agree across methods: digit 0 is at or near the best-matching digit for both the CNN and the Siamese network in @fig-comp-digit, broadly consistent with the EDA's digit-0-restricted PCA (@fig-eda-pca) showing clean writer clusters for that digit. The session gap -- how much farther apart same-writer pairs sit when they come from different sessions rather than the same one -- is present for every model: cross-session distances exceed same-session distances by a factor of `r sprintf("%.1f", get_val(comp_session, "pca", "gap_ratio"))`x for the PCA baseline, `r sprintf("%.1f", get_val(comp_session, "cnn", "gap_ratio"))`x for the CNN, and `r sprintf("%.1f", get_val(comp_session, "siamese", "gap_ratio"))`x for the Siamese network, confirming that the session drift documented in @sec-eda costs every model some matching accuracy, not just the simplest one.
+
+As with @sec-split, these numbers should be read with the data's limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) -- a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.
 
 <!-- =====================================================================
      CONCLUSION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 300 words
@@ -935,12 +1024,12 @@ The brief asks, for each task: (a) what tool you used, (b) what you used it for,
 
 | Task | Filled by | (a) Tool | (b) Used for | (c) How checked | (d) How much used |
 |---|---|---|---|---|---|
-| 1 Data exploration | Jesse | | | | |
+| 1 Data exploration | Jesse | Claude Code | Drafting the write-up discussing the EDA figures/table | Re-ran the EDA code myself and checked every cited number against it; rewrote into my own words | Edited, some |
 | 2 CNN | Maxine | | | | |
 | 3 Siamese network | Nicole | | | | |
-| 4 Evaluation design | Jesse | | | | |
+| 4 Evaluation design | Jesse | Claude Code | Writing `R/optimism_baseline.R` and drafting the write-up | Ran the script and re-derived the reported gap by hand; rewrote the text into my own words | Edited, most (code); edited, some (text) |
 | 5 Hyperparameter sensitivity | Maxine, Nicole | | | | |
-| 6 Comparison | Jesse, Maxine, Nicole | | | | |
+| 6 Comparison | Jesse, Maxine, Nicole | Jesse: Claude Code | Jesse: writing `R/eval_embeddings.R` and drafting the "Side by side" write-up | Jesse: ran the script and checked `outputs/comparison.csv` against the numbers cited in text; rewrote the text into my own words | Jesse: edited, most (code); edited, some (text) |
 | 7 Git and GitHub | Maxine | | | | |
 | 8 Report | All | | | | |
 | 9 GitHub Pages | Maxine | | | | |
