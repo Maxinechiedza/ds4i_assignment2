@@ -1,0 +1,2 @@
+"Model","Learning_Rate","Margin","Embedding_Units","Validation_AUC","Test_AUC","Test_Balanced_Accuracy","Approx_EER","Validation_Threshold"
+"Tuned Siamese (Model 1)",0.001,1,32,0.999673333333333,0.851208163265306,0.745714285714286,0.237142857142857,0.391396999359131
