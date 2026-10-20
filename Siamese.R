@@ -107,8 +107,8 @@ check_pairs <- function(pairs, meta) {
   
   same_digit <- meta$digit[pairs[, 1]] == meta$digit[pairs[, 2]]
   
-  print(table(same_writer))
-  print(table(same_digit))
+  table(same_writer)
+  table(same_digit)
   
   stopifnot(all(same_digit))
   stopifnot(!any(pairs[, 1] == pairs[, 2]))
@@ -331,7 +331,8 @@ data.frame(FAR = FAR, FRR = FRR, TAR = TAR, TRR = TRR)
 ## exporting the results for Jess
 
 #embeddings
-dir.create("outputs", showWarnings = FALSE)
+
+#dir.create("outputs", showWarnings = FALSE)
 
 embeddings <- predict(encoder, x, batch_size = 256, verbose = 0)
 
@@ -347,3 +348,280 @@ test_results <- test_pairs |> select(id_1, id_2, same_writer, same_digit, same_s
   mutate(distance = test_dist)
 
 write.csv(test_results,"outputs/siamese_test_distances.csv", row.names = FALSE)
+
+
+
+
+
+
+#==== Task 6 ====#
+
+set.seed(2027)
+
+digit_pair_sets <- list()
+
+for (d in 0:4) {
+  
+  #only use images from held-out test session 5
+  digit_ids <- which(meta$split_main == "test" & meta$digit == d)
+  
+  #generating 1000 balanced pairs for this digit
+  digit_pair_sets[[as.character(d)]] <- make_pairs(ids = digit_ids, n_pairs = 1000, meta = meta)
+}
+
+#verifying each set
+for (d in 0:4) {
+  
+  cat("\nDigit:", d, "\n")
+  
+  pairs <- digit_pair_sets[[as.character(d)]]
+  
+  check_pairs(pairs, meta)
+  
+  cat("Number of pairs:", nrow(pairs), "\n")
+}
+
+
+
+#Calculating AUC and balanced accuracy by digit
+
+digit_results <- data.frame()
+
+for (d in 0:4) {
+  
+  pairs <- digit_pair_sets[[as.character(d)]]
+  
+  batch <- make_batch(pairs = pairs, images = x, meta = meta)
+  
+  distances <- as.numeric(predict(model, list(batch$left, batch$right), verbose = 0))
+  
+  labels <- as.integer(as.vector(batch$y))
+  
+  #ROC AUC
+  roc_obj <- pROC::roc(
+    response = labels,
+    predictor = -distances,
+    levels = c(0, 1),
+    direction = "<",
+    quiet = TRUE
+  )
+  
+  auc_value <- as.numeric(pROC::auc(roc_obj))
+  
+  #calculating balanced accuracy using original validation threshold
+  predictions <- as.integer(distances <= best_threshold)
+  
+  sensitivity <- mean(predictions[labels == 1] == 1)
+  specificity <- mean(predictions[labels == 0] == 0)
+  
+  bal_acc <- (sensitivity + specificity) / 2
+  
+  digit_results <- rbind(digit_results,data.frame(
+      digit = d,
+      n_pairs = length(labels),
+      auc = auc_value,
+      balanced_accuracy = bal_acc,
+      sensitivity = sensitivity,
+      specificity = specificity
+    )
+  )
+}
+
+digit_results
+
+dir.create("outputs", showWarnings = FALSE)
+
+write.csv(digit_results, "outputs/siamese_auc_by_digit.csv", row.names = FALSE)
+
+
+
+#Plotting AUC by digit
+p_digit_auc <- ggplot(digit_results, aes(x = factor(digit), y = auc)) +
+  geom_col(fill = "steelblue") +
+  geom_text(aes(label = sprintf("%.3f", auc)), vjust = -0.4) +
+  coord_cartesian(ylim = c(0, 1.05)) +
+  labs(
+    title = "Siamese ROC AUC by digit",
+    x = "Handwritten digit",
+    y = "Test ROC AUC"
+  ) +
+  theme_minimal()
+
+p_digit_auc
+
+ggsave("outputs/siamese_auc_by_digit.png", p_digit_auc, width = 8, height = 5, dpi = 300)
+
+
+
+
+#Session effects on Siamese distances
+set.seed(2028)
+
+#Using only held-out sessions 4 and 5
+session_ids <- which(meta$session %in% c(4, 5))
+
+#creating a function to make the session pairs
+make_session_pairs <- function(ids, n_pairs, meta, cross_session = FALSE) {
+  
+  pairs <- matrix(NA_integer_, nrow = n_pairs, ncol = 2)
+  
+  for (k in seq_len(n_pairs)) {
+    
+    i <- sample(ids, 1)
+    
+    #same writer and same digit
+    pool <- ids[meta$person_id[ids] == meta$person_id[i] & meta$digit[ids] == meta$digit[i]]
+    
+    if (cross_session) {
+      pool <- pool[meta$session[pool] != meta$session[i]]
+    } else {
+      pool <- pool[meta$session[pool] == meta$session[i]]
+    }
+    
+    pool <- setdiff(pool, i)
+    
+    if (length(pool) == 0) {
+      stop("No eligible partner")
+    }
+    
+    pairs[k, ] <- c(i, sample(pool, 1))
+  }
+  
+  colnames(pairs) <- c("id_1", "id_2")
+  
+  pairs
+}
+
+same_session_pairs <- make_session_pairs(session_ids, 2000, meta, cross_session = FALSE)
+
+cross_session_pairs <- make_session_pairs(session_ids, 2000, meta, cross_session = TRUE)
+
+
+
+#converting pairs into model inputs
+same_session_batch <- make_batch(same_session_pairs, x, meta)
+
+cross_session_batch <- make_batch(cross_session_pairs, x, meta)
+
+#predicting distances
+same_session_dist <- as.numeric(predict(model, list(same_session_batch$left, same_session_batch$right), verbose = 0))
+
+cross_session_dist <- as.numeric(predict(model, list(cross_session_batch$left, cross_session_batch$right), verbose = 0))
+
+#summarising the results
+session_results <- data.frame(
+  Condition = c("Same session", "Cross session"),
+  Mean_Distance = c(mean(same_session_dist), mean(cross_session_dist)),
+  Median_Distance = c(median(same_session_dist), median(cross_session_dist)),
+  Proportion_Correct = c(mean(same_session_dist <= best_threshold), mean(cross_session_dist <= best_threshold))
+)
+session_results
+
+
+session_plot_data <- data.frame(
+  distance = c(same_session_dist, cross_session_dist),
+  condition = rep(c("Same session", "Cross session"), each = 2000))
+
+p_session <- ggplot(session_plot_data, aes(x = distance, fill = condition)) +
+  geom_density(alpha = 0.4) +
+  geom_vline(xintercept = best_threshold, linetype = "dashed") +
+  labs(
+    title = "Session effects on same-writer distances",
+    x = "Euclidean distance",
+    y = "Density",
+    fill = "Condition"
+  ) +
+  theme_minimal()
+
+p_session
+
+write.csv(session_results, "outputs/siamese_session_effects.csv", row.names = FALSE)
+
+ggsave("outputs/siamese_session_effects.png", p_session, width = 8, height = 5, dpi = 300)
+
+
+
+##Session specific ROC AUC
+set.seed(2029)
+
+make_session_negative_pairs <- function(ids, n_pairs, meta, cross_session = FALSE) {
+  
+  pairs <- matrix(NA_integer_, nrow = n_pairs, ncol = 2)
+  
+  for (k in seq_len(n_pairs)) {
+    
+    i <- sample(ids, 1)
+    
+    #different writer, but the same digit
+    pool <- ids[meta$person_id[ids] != meta$person_id[i] & meta$digit[ids] == meta$digit[i]]
+    
+    if (cross_session) {
+      pool <- pool[meta$session[pool] != meta$session[i]]
+    } else {
+      pool <- pool[meta$session[pool] == meta$session[i]]
+    }
+    
+    if (length(pool) == 0) stop("No eligible partner")
+    
+    pairs[k, ] <- c(i, sample(pool, 1))
+  }
+  
+  pairs
+}
+
+session_auc_results <- data.frame()
+
+for (condition in c("Same session", "Cross session")) {
+  
+  cross <- condition == "Cross session"
+  
+  positive_pairs <- if (cross) {
+    cross_session_pairs
+  } else {
+    same_session_pairs
+  }
+  
+  negative_pairs <- make_session_negative_pairs(session_ids, n_pairs = 2000, meta = meta, cross_session = cross)
+  
+  negative_batch <- make_batch(negative_pairs, x, meta)
+  
+  negative_dist <- as.numeric(predict(model, list(negative_batch$left, negative_batch$right), verbose = 0))
+  
+  positive_dist <- if (cross) {
+    cross_session_dist
+  } else {
+    same_session_dist
+  }
+  
+  labels <- c(rep(1, length(positive_dist)), rep(0, length(negative_dist)))
+  
+  distances <- c(positive_dist, negative_dist)
+  
+  auc_value <- as.numeric(pROC::auc(pROC::roc(
+        response = labels,
+        predictor = -distances,
+        levels = c(0, 1),
+        direction = "<",
+        quiet = TRUE
+      )
+    )
+  )
+  
+  predictions <- as.integer(distances <= best_threshold)
+  
+  sensitivity <- mean(predictions[labels == 1] == 1)
+  specificity <- mean(predictions[labels == 0] == 0)
+  
+  session_auc_results <- rbind(session_auc_results, data.frame(
+      Condition = condition,
+      AUC = auc_value,
+      Balanced_Accuracy = (sensitivity + specificity) / 2,
+      Sensitivity = sensitivity,
+      Specificity = specificity
+    )
+  )
+}
+
+session_auc_results
+
+write.csv(session_auc_results, "outputs/siamese_session_auc.csv", row.names = FALSE)

@@ -1,0 +1,3 @@
+"same_digit","n_pairs","auc","balanced_accuracy"
+FALSE,400,0.694525,0.5
+TRUE,1000,0.979676,0.844
