@@ -1,0 +1,2 @@
+"Experiment","Train_Writers","Validation_Writers","Test_Writers","Validation_AUC","Test_AUC","Test_Balanced_Accuracy","Approx_EER","Validation_Threshold"
+"Unseen writers",14,3,3,0.981291111111111,0.893436888888889,0.778333333333333,0.186,0.61402690410614
