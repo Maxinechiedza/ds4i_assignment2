@@ -1,5 +1,12 @@
 [
   {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
+    "section": "",
+    "text": "Handwriting contains characteristics that can distinguish one writer from another, even when different people write the same digit. However, recognising these differences becomes more difficult when handwriting changes across sessions or when different digits are compared. This report investigates two related tasks: identifying which of 20 known writers produced a handwritten digit, and determining whether two digit images were produced by the same writer.\nThe dataset contains 25,000 simulated greyscale images from 20 writers, covering digits 0–4 across five sessions. Exploratory analysis is used to examine how handwriting varies by writer, digit and session. To assess generalisation, models are trained on sessions 1–3, validated on session 4 and tested on session 5, rather than randomly splitting individual images. A separate writer-held-out experiment tests whether same-writer matching can extend to previously unseen writers.\nTwo neural network approaches are evaluated. A convolutional neural network (CNN) predicts writer identity as a 20-class classification problem, while a Siamese network learns an embedding space in which images from the same writer should be closer together than those from different writers. We compare their performance, investigate hyperparameter sensitivity, and examine how digit identity and session variation affect the results. The aim is to assess not only how accurately each model performs, but also which approach is better suited to identification or verification and where its limitations lie."
+  },
+  {
     "objectID": "index.html#sec-tune-cnn",
     "href": "index.html#sec-tune-cnn",
     "title": "Who wrote this digit? Writer identification with CNNs and Siamese networks",
