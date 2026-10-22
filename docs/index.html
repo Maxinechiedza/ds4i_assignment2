@@ -64,7 +64,7 @@ div.csl-indent {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-359b6ce6b83841630060971f7712478f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-0ed2b50c78af9a1be4b4ef04495f9340.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "language": {
     "search-no-results-text": "No results",
@@ -182,13 +182,16 @@ div.csl-indent {
      ===================================================================== -->
 <section id="sec-intro" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>Handwriting contains characteristics that can distinguish one writer from another, even when different people write the same digit. However, recognising these differences becomes more difficult when handwriting changes across sessions or when different digits are compared. This report investigates two related tasks: identifying which of 20 known writers produced a handwritten digit, and determining whether two digit images were produced by the same writer.</p>
+<p>The dataset contains 25,000 simulated greyscale images from 20 writers, covering digits 0–4 across five sessions. Exploratory analysis is used to examine how handwriting varies by writer, digit and session. To assess generalisation, models are trained on sessions 1–3, validated on session 4 and tested on session 5, rather than randomly splitting individual images. A separate writer-held-out experiment tests whether same-writer matching can extend to previously unseen writers.</p>
+<p>Two neural network approaches are evaluated. A convolutional neural network (CNN) predicts writer identity as a 20-class classification problem, while a Siamese network learns an embedding space in which images from the same writer should be closer together than those from different writers. We compare their performance, investigate hyperparameter sensitivity, and examine how digit identity and session variation affect the results. The aim is to assess not only how accurately each model performs, but also which approach is better suited to identification or verification and where its limitations lie.</p>
 <!-- =====================================================================
      DATA AND EXPLORATION  ·  Task 1  ·  OWNER: Jesse (A)  ·  ≈ 550 words
      ===================================================================== -->
 </section>
 <section id="sec-eda" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Data and exploration</h1>
-<p>The data is 25,000 simulated images: 20 writers x 5 digits x 5 sessions x 50 replicates, each a 28x28 greyscale digit. <a href="#fig-eda-grid" class="quarto-xref">Figure&nbsp;1</a> lines up one writer per row and one digit per column: digit shape dominates what the eye sees, but within a row each writer keeps a visibly consistent stroke width and slant across all five digits – the thing we are hoping a model can key on. <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> follows one writer’s digit across the five sessions: the stroke becomes visibly heavier and more angular from session 1 to session 5, a gradual drift rather than a jump, and the same drift direction holds for every replicate shown within a session. Replicates <em>within</em> one session, by contrast, look close to identical – the main source of within-session variation is small pixel-level noise, not a different way of writing the digit.</p>
+<p>The data is 25,000 simulated images: 20 writers × 5 digits × 5 sessions × 50 replicates, each a 28 × 28 greyscale digit. <a href="#fig-eda-grid" class="quarto-xref">Figure&nbsp;1</a> lines up one writer per row and one digit per column: digit shape dominates what the eye sees, but within a row each writer keeps a visibly consistent stroke width and slant across all five digits – the thing we are hoping a model can key on. <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> follows one writer’s digit across the five sessions: the stroke becomes visibly heavier and more angular from session 1 to session 5, a gradual drift rather than a jump, and the same drift direction holds for every replicate shown within a session. Replicates <em>within</em> one session, by contrast, look close to identical – the main source of within-session variation is small pixel-level noise, not a different way of writing the digit.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-eda-grid" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -302,7 +305,7 @@ Table&nbsp;1: Share of feature variance (after removing each feature’s digit m
 </figure>
 </div>
 </div>
-<p><a href="#tbl-eda-variance" class="quarto-xref">Table&nbsp;1</a> puts a number on that impression with a variance decomposition (each feature is first centred on its own digit mean, so digit shape doesn’t swamp the writer/session split). Slant is the most writer-specific feature, at 87.9% of its variance sitting between writers and only 2.1% left as within-session noise; ink and width are similar, with 79.1% and 71.7% between writers respectively. Centroid shift is the exception: only 8.5% of its variance is between writers, with the rest (77.7%) within a single session – these images are already centred during generation, so where the centre of mass lands is mostly replicate noise rather than a writer trait. Across every feature, the between-session share stays small (at most 13.8%), confirming that the session effect visible in <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> is real but subtle next to the writer effect – good news for a model trying to recognise a writer on a new day.</p>
+<p><a href="#tbl-eda-variance" class="quarto-xref">Table&nbsp;1</a> puts a number on that impression with a variance decomposition (each feature is first centred on its own digit mean, so digit shape doesn’t swamp the writer/session split). Slant is the most writer-specific feature, at 87.9% of its variance sitting between writers and only 2.1% left as within-session noise; ink and width are similar, with 79.1% and 71.7% between writers respectively. Centroid shift is the exception: only 8.5% of its variance is between writers, with most of the remainder (77.7%) within a single session and the rest (13.8%) between sessions – these images are already centred during generation, so where the centre of mass lands is mostly replicate noise rather than a writer trait. Across every feature, the between-session share stays small (at most 13.8%), confirming that the session effect visible in <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> is real but subtle next to the writer effect – good news for a model trying to recognise a writer on a new day.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-eda-pca" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -413,14 +416,14 @@ Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-he
 </div>
 </div>
 <p>The gap is large: the same baseline reaches 93.0% accuracy on the random split but only 45.9% on the session split – a 47.1% drop from nothing but the split strategy, with the model, features and train/test sizes held fixed. That gap is the optimism a random split would have bought this baseline: with random assignment, a near-identical replicate of the test writer’s handwriting (same writer, same digit, often the same session) is likely sitting in the training set, so the “test” accuracy mostly measures memorisation of a very similar example rather than generalisation to new handwriting.</p>
-<p>Three leakage risks matter for both models even with the session split in place. First, test pairs and splits must be built in the right order: <code>data/test_pairs.csv</code> is built from <code>data/splits.csv</code> (<a href="#sec-split" class="quarto-xref">Section&nbsp;3</a>, <code>R/00_data.R</code>), not the reverse, so no pair can straddle train and test. Second, the Siamese threshold is chosen on validation pairs only (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>) and never touched again once test pairs are scored, so it can’t be quietly fitted to the test set. Third, the same image never appears in more than one pair-role that would let information leak between train and test test pairs, since pairs are drawn after the split and only from the appropriate session(s). Even so, results may still read as somewhat optimistic: with only 20 writers the models are solving a much easier closed-set problem than real-world identification among thousands of candidates, and the data is simulated, so the writer and session effects are exactly the effects the simulator was built to produce (<a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a>) – a real-world, cross-scanner, cross-pen deployment would likely see a larger session-style gap than the one measured here.</p>
+<p>Three leakage risks matter for both models even with the session split in place. First, test pairs and splits must be built in the right order: <code>data/test_pairs.csv</code> is built from <code>data/splits.csv</code> (<a href="#sec-split" class="quarto-xref">Section&nbsp;3</a>, <code>R/00_data.R</code>), not the reverse, so no pair can straddle train and test. Second, the Siamese threshold is chosen on validation pairs only (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>) and never touched again once test pairs are scored, so it can’t be quietly fitted to the test set. Third, the same image never appears in more than one pair-role that would let information leak between train and test pairs, since pairs are drawn after the split and only from the appropriate session(s). Even so, results may still read as somewhat optimistic: with only 20 writers the models are solving a much easier closed-set problem than real-world identification among thousands of candidates, and the data is simulated, so the writer and session effects are exactly the effects the simulator was built to produce (<a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a>) – a real-world, cross-scanner, cross-pen deployment would likely see a larger session-style gap than the one measured here.</p>
 <!-- =====================================================================
      CNN  ·  Task 2  ·  OWNER: Maxine (Role B)  ·  ≈ 650 words
      ===================================================================== -->
 </section>
 <section id="sec-cnn" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Writer identification with a CNN</h1>
-<p>Two convolutional neural networks (CNNs), with two and three layers, were built to predict writer identity. <a href="#tbl-cnn-arch" class="quarto-xref">Table&nbsp;4</a> summarises their architectures and parameter counts. The three-layer model adds a 2 x 2 max-pooling layer and a convolutional layer with 64 filters. Both models use a 20-unit softmax output to estimate probabilities for the 20 writers. The three-layer CNN also serves as the Siamese network’s shared backbone.</p>
+<p>Two convolutional neural networks (CNNs), with two and three layers, were built to predict writer identity. <a href="#tbl-cnn-arch" class="quarto-xref">Table&nbsp;4</a> summarises their architectures and parameter counts. The three-layer model adds a 2 × 2 max-pooling layer and a convolutional layer with 64 filters. Both models use a 20-unit softmax output to estimate probabilities for the 20 writers. The three-layer CNN also serves as the Siamese network’s shared backbone.</p>
 <div class="cell">
 <div id="tbl-cnn-arch" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -1154,6 +1157,11 @@ Figure&nbsp;18: Matching AUC by digit (same-digit test pairs only) for the PCA b
 </section>
 <section id="sec-conclusion" class="level1" data-number="8">
 <h1 data-number="8"><span class="header-section-number">8</span> Conclusion</h1>
+<p>The results show that writer-specific information can be learned from handwritten digits, but performance depends strongly on the evaluation design and the type of comparison being made. Exploratory analysis found clear differences between writers, while session changes introduced additional variation. This was reflected in the baseline results: a simple classifier achieved 93.0% accuracy under a random image split but only 45.9% when an entire session was held out. Random splitting therefore gives an overly optimistic impression of how well a model recognises handwriting from a new session.</p>
+<p>For writer identification, the three-layer CNN performed better than the two-layer model, achieving 56.6% test accuracy and 84.8% top-three accuracy. Increasing model depth improved performance, although the three-layer model also showed overfitting and overconfidence. Accuracy varied considerably between writers and sessions, meaning that the overall result hides cases where the model performs well and others where it struggles to identify the correct writer.</p>
+<!-- TODO (not yet resolved): the Siamese test ROC AUC/balanced accuracy quoted below (0.851 / 74.6%) come from Siamese.R's task3_results, which is computed but never written to a CSV -- so these numbers can't currently be reproduced from anything in outputs/. Recomputing ROC AUC directly from outputs/siamese_test_distances.csv gives 0.844 (matching @tbl-comp-summary and the "All pairs" row of the digit/session comparison), not 0.851. Nicole: please re-run Siamese.R, add a write.csv() for task3_results, and update this paragraph (and @sec-siam, @sec-tune-siam, @sec-comp-siam) with whatever the re-run actually produces. -->
+<p>The Siamese network achieved a test ROC AUC of 0.851 and balanced accuracy of 74.6% for same-writer verification. It also achieved 0.893 AUC in the separate unseen-writer experiment, suggesting that the learned similarity measure can transfer to new identities. However, matching became less reliable across sessions and particularly when the two images represented different digits. In the direct embedding comparison, the CNN achieved the highest matching AUC of 0.943, compared with 0.844 for the Siamese network and 0.767 for PCA. The CNN is therefore more effective for identifying known writers in this study, while the Siamese approach offers a way to verify writers without requiring them to be included in the original classification model.</p>
+<p>These findings are limited by the use of clean, simulated handwriting from only 20 writers and five digits. Future work could evaluate both models on real handwriting collected across more sessions and writing conditions, while including cross-digit pairs during Siamese training to improve generalisation. Overall, the study shows that both approaches can capture writer-specific characteristics, but their usefulness depends on the task and how well they handle changes in handwriting.</p>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
@@ -1171,19 +1179,20 @@ Figure&nbsp;18: Matching AUC by digit (same-digit test pairs only) for the PCA b
 
 </div></section><section id="ai-use-statement" class="level1 appendix" data-number="10"><h2 class="anchored quarto-appendix-heading"><span class="header-section-number">10</span> AI use statement</h2><div class="quarto-appendix-contents">
 
+<p>Condensed from the dated log in <a href="https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md"><code>AI_USE_LOG.md</code></a> in the repository.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 28%">
+<col style="width: 27%">
+<col style="width: 14%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Task</th>
-<th>Filled by</th>
+<th>Member</th>
 <th>(a) Tool</th>
 <th>(b) Used for</th>
 <th>(c) How checked</th>
@@ -1202,66 +1211,106 @@ Figure&nbsp;18: Matching AUC by digit (same-digit test pairs only) for the PCA b
 <tr class="even">
 <td>2 CNN</td>
 <td>Maxine</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Claude</td>
+<td>CNN code: <code>get_split()</code> and <code>build_cnn()</code> in <code>R/cnn_functions.R</code>, with explanations of one-hot labels, pixel scaling and the layer sizes; explanations to help me interpret results (top-3 accuracy, overfitting vs choosing on validation); review of my draft text (fact-check against the results, word counts)</td>
+<td>Ran the code in RStudio and checked the image dimensions and the 750 training images per writer; checked the numbers against the output files; I corrected the facts and rewrote the flagged passages myself</td>
+<td>Code: most, as-is. Explanations and text review: some, edited</td>
 </tr>
 <tr class="odd">
 <td>3 Siamese network</td>
 <td>Nicole</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>ChatGPT</td>
+<td>Troubleshooting the Siamese network R code (pair construction, model training, contrastive loss and evaluation metrics); refining the Siamese figures (positive/negative pairs, distance distributions, ROC curves); reviewing and revising the Siamese analysis and results write-up for clarity, structure, consistency and interpretation</td>
+<td>Inspected all suggested code edits and ran them in RStudio; inspected model outputs, pair construction and evaluation results; compared the figures with the saved output files; reviewed the wording before incorporating edits</td>
+<td>Edited, some</td>
 </tr>
 <tr class="even">
 <td>4 Evaluation design</td>
 <td>Jesse</td>
 <td>Claude Code</td>
-<td>Writing <code>R/optimism_baseline.R</code> and drafting the write-up</td>
-<td>Ran the script and re-derived the reported gap by hand; rewrote the text into my own words</td>
-<td>Edited, most (code); edited, some (text)</td>
+<td>Debugging, editing and refining <code>R/optimism_baseline.R</code> – my own k-NN leakage baseline script – and drafting the write-up</td>
+<td>Wrote and ran the script myself, retesting after each change; re-derived the reported accuracy gap by hand; rewrote the text into my own words</td>
+<td>Edited, some (code); edited, some (text)</td>
 </tr>
 <tr class="odd">
 <td>5 Hyperparameter sensitivity</td>
-<td>Maxine, Nicole</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Maxine</td>
+<td>Claude</td>
+<td>Tuning design and scripts <code>R/tune_cnn.R</code>, <code>R/tune_cnn_valacc.R</code> and <code>R/tune_cnn_reg.R</code> (regularisation check with a decision rule fixed before the runs); reading effects against seed noise; diagnosing early-stopping problems (validation loss vs accuracy, patience, epoch cap); explanations and review of my draft text</td>
+<td>Ran every fit myself and read the learning curves; re-running a seed reproduced the same result; the current setting re-run matched earlier runs exactly; I corrected the facts and rewrote the flagged passages myself</td>
+<td>Scripts: most, edited. Explanations and text review: some, edited</td>
+</tr>
+<tr class="even">
+<td>5 Hyperparameter sensitivity</td>
+<td>Nicole</td>
+<td>ChatGPT</td>
+<td>Hyperparameter tuning and plotting learning rate, margin and embedding dimension sensitivity; revising the tuning write-up</td>
+<td>Inspected all suggested edits to the tuning experiments and ran them in R; checked the CSV outputs, seed variability and plotted results; reviewed the wording before incorporating edits</td>
+<td>Tuning: edited, most. Write-up: edited, some</td>
+</tr>
+<tr class="odd">
+<td>6 Comparison</td>
+<td>Jesse</td>
+<td>Claude Code</td>
+<td>Debugging, editing and refining <code>R/eval_embeddings.R</code> – my own script – and drafting the “Side by side” write-up</td>
+<td>Wrote and ran the script myself, retesting after each change; checked <code>outputs/comparison.csv</code> against cited numbers</td>
+<td>Edited, some (code); edited, some (text)</td>
 </tr>
 <tr class="even">
 <td>6 Comparison</td>
-<td>Jesse, Maxine, Nicole</td>
-<td>Jesse: Claude Code</td>
-<td>Jesse: writing <code>R/eval_embeddings.R</code> and drafting the “Side by side” write-up</td>
-<td>Jesse: ran the script and checked <code>outputs/comparison.csv</code> against the numbers cited in text; rewrote the text into my own words</td>
-<td>Jesse: edited, most (code); edited, some (text)</td>
+<td>Maxine</td>
+<td>Claude</td>
+<td><code>R/cnn_digit_session.R</code> (leave-one-session-out and digit-only CNNs, 3 seeds); explanations of which exhibit answers which brief question and of digit-only vs all-digit models; review of my draft text</td>
+<td>Ran the script; the session-5 fold reproduced the main 56.6%; checked the numbers against the output files; I corrected the facts and rewrote the flagged passages myself</td>
+<td>Script: most, edited. Explanations and text review: some, edited</td>
 </tr>
 <tr class="odd">
+<td>6 Comparison</td>
+<td>Nicole</td>
+<td>ChatGPT</td>
+<td>Refining the Siamese digit-level performance and session-effect figures; revising the results write-up</td>
+<td>Ran all suggested edits to the plotting code, inspected the figures and compared them with the saved output files; reviewed the wording before incorporating edits</td>
+<td>Edited, some</td>
+</tr>
+<tr class="even">
 <td>7 Git and GitHub</td>
 <td>Maxine</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Claude</td>
+<td>Planning the three-person work split; GitHub set-up (repo layout, <code>README.md</code> workflow rules, <code>submission.txt</code>); fixing the <code>usethis</code>/<code>gh</code> “check_string” error; commit, push and merge commands; tidying <code>index.qmd</code> after RStudio’s Visual mode reformatted other members’ sections</td>
+<td>We read and adjusted the plan; the repo works for all three of us; diffs against <code>main</code> touched only my sections; pull requests merged without conflicts</td>
+<td>Plan and set-up: most, edited. Git commands: most, as-is</td>
+</tr>
+<tr class="odd">
+<td>8 Report</td>
+<td>Jesse</td>
+<td>Claude Code</td>
+<td>Drafting Data/Evaluation/Comparison prose</td>
+<td>Re-ran underlying code to confirm every cited number; rewrote into own words</td>
+<td>Edited, some</td>
 </tr>
 <tr class="even">
 <td>8 Report</td>
-<td>All</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Maxine</td>
+<td>Claude</td>
+<td>Report template: <code>index.qmd</code> with owner boxes and figure labels, and <code>_quarto.yml</code></td>
+<td>Template rendered with Quarto</td>
+<td>Most, edited</td>
 </tr>
 <tr class="odd">
+<td>8 Report</td>
+<td>Nicole</td>
+<td>ChatGPT</td>
+<td>Drafting and refining the introduction and conclusion, including summarising the CNN and Siamese findings</td>
+<td>Reviewed the suggestions against the report’s results and model comparisons</td>
+<td>Edited, some</td>
+</tr>
+<tr class="even">
 <td>9 GitHub Pages</td>
 <td>Maxine</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Claude</td>
+<td>GitHub Pages set-up and fixing the “No such file docs” error; restyling the site (title page, fonts, table and caption styling, hidden code, repo links) and rendering it</td>
+<td>The Pages site loaded in the browser; checked the restyled site: text and figures unchanged</td>
+<td>Set-up: most, edited. Restyling: most, as-is</td>
 </tr>
 </tbody>
 </table>

@@ -33,6 +33,7 @@ Columns:
 | 2026-10-14 to 2026-10-15 | 5, 6 | Claude | `R/tune_cnn_reg.R` (regularisation check with a decision rule fixed before the runs) and `R/cnn_digit_session.R` (leave-one-session-out and digit-only CNNs, 3 seeds)| Ran both scripts; the session-5 fold reproduced the main 56.6%; the current setting re-run matched earlier runs exactly | Most, edited |
 | 2026-10-13 to 2026-10-18 | 2, 5, 6 | Claude | Explanations to help me interpret results: top-3 accuracy, overfitting vs choosing on validation, which exhibit answers which brief question, digit-only vs all-digit models | Checked the numbers against the output files | Some, edited |
 | 2026-10-18 | 2, 5, 6 | Claude | Review of my draft text: fact-check against the results, word counts | I corrected the facts and rewrote the flagged passages myself | Some, edited |
+| 2026-10-22 | 9 | Claude | Restyled the GitHub Pages site (title page, fonts, table and caption styling, hidden code, repo links) and rendered it | Checked the website to see new style, style looks better and text and figures unchanged | Most, as-is |
 
 ## Nicole (Role C)
 
