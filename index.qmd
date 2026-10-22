@@ -1,21 +1,25 @@
 ---
 title: "Who wrote this digit? Writer identification with CNNs and Siamese networks"   # working title – change freely
-subtitle: "STA5073Z Data Science for Industry 2026 · Assignment 2"
+# Title page lines above the title (the title page layout is in assets/title-block.html)
+institution: "University of Cape Town"
+department: "Department of Statistical Sciences"
+course: "STA5073Z: Data Science for Industry · Assignment 2"
 author:
-  - name: "Maxine Senderayi (SNDMAX001)"   # Role B – CNN (also GitHub repo and website)
-  - name: "Jesse MacDonald (MCDJES006)"    # Role A – data, evaluation design and comparison
-  - name: "Nicole Thomas (THMNIC036)"      # Role C – Siamese network
+  - name: "Maxine Senderayi"     # Role B – CNN (also GitHub repo and website)
+    student-number: "SNDMAX001"
+  - name: "Jesse MacDonald"      # Role A – data, evaluation design and comparison
+    student-number: "MCDJES006"
+  - name: "Nicole Thomas"        # Role C – Siamese network
+    student-number: "THMNIC036"
 date: today
 format:
   html:
     toc: true
     toc-depth: 2
     number-sections: true
-    code-fold: true
-    code-summary: "Show code"
     fig-align: center
 execute:
-  echo: true
+  echo: false      # code is hidden in the report; it is all in this file and in R/ on GitHub
   warning: false
   message: false
 

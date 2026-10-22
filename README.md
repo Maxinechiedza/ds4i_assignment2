@@ -12,6 +12,7 @@ Repository: https://github.com/Maxinechiedza/ds4i_assignment2
 |---|---|---|
 | `index.qmd` | The report. Every section is marked with its owner. | Everyone, own sections only |
 | `_quarto.yml` | Turns the report into a website that renders into `docs/` | Maxine |
+| `assets/` | Website look: `report.scss` (styling), `title-block.html` (title page), `fonts/` | Maxine |
 | `docs/` | The rendered website GitHub Pages shows. Never edit by hand. | Made by `quarto render` |
 | `data/handwriting.rds` | The raw data from Amathuba | – |
 | `R/00_data.R` | Loads the data and writes the shared split files | Jesse |
