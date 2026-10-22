@@ -243,7 +243,15 @@ main.content table.table {
     font-weight: 700;
     border-bottom: none;
   }
-  table.table { font-size: 0.8rem; }
+  /* the AI use statement: smaller type, and keep the table inside the text column.
+     !important beats Quarto's own appendix rule (.quarto-appendix-contents > * { font-size: .9em }) */
+  .quarto-appendix-contents > table.table {
+    font-size: 0.8rem !important;
+    table-layout: fixed;
+    width: 100%;
+    overflow-wrap: break-word;
+    > :not(caption) > * > * { padding: 0.3rem 0.4rem; }
+  }
 }
 
 /* Appendices are not numbered sections */
