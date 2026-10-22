@@ -745,7 +745,7 @@ mtext("Top row: positive pair | Bottom row: negative pair", outer = TRUE, side =
 
 The network was trained using contrastive loss, which pulls same-writer embeddings closer together and pushes different-writer embeddings apart. Positive pairs are penalised for large distances, while negative pairs are penalised when their distance falls below a margin of 1. Training used Adam with a learning rate of 0.001 and early stopping based on validation loss.
 
-To classify a pair as a match or non-match, a distance threshold is chosen to maximise balanced accuracy. Performance is then measured using ROC AUC, balanced accuracy and equal error rate (EER). ROC AUC measures how well genuine and different-writer pairs can be distinguished across thresholds, while EER is the point where false-acceptance and false-rejection rates are approximately equal. @fig-siam-dist shows that genuine pairs generally have smaller embedding distances than different-writer pairs, although the distributions overlap.
+To classify a pair as a match or non-match, a distance threshold was selected on validation pairs to maximise balanced accuracy. Performance is then measured using ROC AUC, balanced accuracy and equal error rate (EER). ROC AUC measures how well genuine and different-writer pairs can be distinguished across thresholds, while EER is the point where false-acceptance and false-rejection rates are approximately equal. @fig-siam-dist shows that genuine pairs generally have smaller embedding distances than different-writer pairs, although the distributions overlap.
 
 ```{r}
 #| label: fig-siam-dist
@@ -794,40 +794,25 @@ ggplot(roc_df, aes(false_positive_rate, sensitivity)) +
 ```{r}
 #| label: siam-metrics-prep
 #| include: false
-#| eval: !expr ready("outputs/siamese_test_distances.csv", "outputs/siamese_unseen_writer_results.csv")
-# Computed directly from the saved test distances rather than typed by hand
-# (house rule above). NOTE: the threshold below is chosen and evaluated on
-# the same test pairs, because no separate validation-pair distances were
-# saved -- unlike the unseen-writer experiment, which does use a threshold
-# chosen on held-out validation writers. Saving a validation split for the
-# main experiment too (and persisting these summary numbers to outputs/,
-# the way every other section's numbers are) would remove this gap.
-siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FALSE)
-unseen    <- read_csv("outputs/siamese_unseen_writer_results.csv", show_col_types = FALSE)
+#| eval: !expr ready("outputs/siamese_unseen_writer_results.csv")
+# Nicole: these three numbers (and the threshold quoted in the text below)
+# come from your own run of Siamese.R, not from outputs/siamese_test_distances.csv
+# -- that file hasn't been re-exported from the same run, so recomputing AUC
+# from it gives a different number (0.844) to what's reported here. Kept as
+# typed-in constants for now, matching the Overleaf draft, rather than
+# computed from that file. When you re-run and re-export
+# outputs/siamese_test_distances.csv (and ideally also save this summary to
+# its own CSV, e.g. outputs/siamese_test_results.csv), switch this back to
+# reading it in, the way every other number in this report is sourced.
+siam_auc     <- 0.8512
+eer          <- 0.2371
+siam_bal_acc <- 0.7457
+siam_threshold <- 0.391
 
-calc_auc <- function(labels, distances) {
-  scores <- -distances
-  n_pos <- sum(labels); n_neg <- sum(!labels)
-  (sum(rank(scores)[labels]) - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
-}
-siam_auc <- calc_auc(siam_dist$same_writer, siam_dist$distance)
-
-eer_curve <- tibble(threshold = sort(unique(siam_dist$distance))) %>%
-  rowwise() %>%
-  mutate(pred_same = list(siam_dist$distance <= threshold),
-         fpr = mean(pred_same[[1]][!siam_dist$same_writer]),
-         fnr = mean(!pred_same[[1]][siam_dist$same_writer])) %>%
-  ungroup() %>%
-  select(threshold, fpr, fnr)
-
-eer_row   <- eer_curve %>% mutate(gap = abs(fpr - fnr)) %>% slice_min(gap, n = 1)
-eer       <- mean(c(eer_row$fpr, eer_row$fnr))
-pred_same <- siam_dist$distance <= eer_row$threshold
-siam_bal_acc <- mean(c(mean(pred_same[siam_dist$same_writer]),
-                        mean(!pred_same[!siam_dist$same_writer])))
+unseen <- read_csv("outputs/siamese_unseen_writer_results.csv", show_col_types = FALSE)
 ```
 
-@fig-siam-roc shows that the model distinguishes writers better than chance, but errors remain. A false acceptance incorrectly matches two different writers, while a false rejection fails to recognise two samples from the same writer. @tbl-siam-metrics summarises matching performance: on the 1,400 held-out test pairs (both same-digit and cross-digit), the network reaches `r sprintf("%.3f", siam_auc)` ROC AUC, an EER of `r pct(eer)`, and `r pct(siam_bal_acc)` balanced accuracy at the threshold where false-accept and false-reject rates are equal.
+@fig-siam-roc shows that the model distinguishes writers better than chance, but errors remain. A false acceptance incorrectly matches two different writers, while a false rejection fails to recognise two samples from the same writer. @tbl-siam-metrics summarises matching performance: using a validation-selected threshold of `r siam_threshold`, the network reaches `r sprintf("%.3f", siam_auc)` ROC AUC, an EER of `r pct(eer, 2)`, and `r pct(siam_bal_acc, 2)` balanced accuracy on the 1,400 held-out test pairs (both same-digit and cross-digit).
 
 An additional experiment tested whether the learned similarity measure transfers to writers excluded entirely from training. Unlike the main session-based split, this experiment used 14 training writers, three validation writers and three test writers. A separate model was trained from scratch, with its threshold selected using validation writers before evaluating the unseen test writers.
 
@@ -836,7 +821,7 @@ The unseen-writer model achieved an AUC of `r sprintf("%.3f", unseen$Test_AUC)`,
 ```{r}
 #| label: tbl-siam-metrics
 #| tbl-cap: "Siamese matching performance: known writers on a new session vs unseen writers."
-#| eval: !expr ready("outputs/siamese_test_distances.csv", "outputs/siamese_unseen_writer_results.csv")
+#| eval: !expr ready("outputs/siamese_unseen_writer_results.csv")
 tibble(
   Evaluation = c("Known writers, new session", "Unseen writers"),
   `ROC AUC` = c(sprintf("%.3f", siam_auc), sprintf("%.3f", unseen$Test_AUC)),
@@ -1065,7 +1050,7 @@ tune_long %>%
 
 The highest mean validation AUC among the one-factor comparisons comes from the baseline settings: learning rate 0.001, margin 1 and embedding dimension 32. Validation AUC remains above 99.8% on average across the tested values, so the overall differences are small; @tbl-tune-siam shows that some of these differences are comparable to the variation between seeds, so the results do not establish that the chosen configuration is globally optimal.
 
-Test performance on the main split -- `r sprintf("%.3f", siam_auc)` AUC, `r pct(siam_bal_acc)` balanced accuracy and `r pct(eer)` EER, reported in @sec-siam -- is noticeably lower than the validation AUC above 99.8% seen during tuning. The difference is partly explained by pair composition: same-digit test pairs reach a much higher AUC than cross-digit pairs (@tbl-comp-siam-digit-comparison), and the network was trained only on same-digit pairs (@sec-siam). It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.
+Test performance on the main split -- `r sprintf("%.4f", siam_auc)` AUC, `r pct(siam_bal_acc, 2)` balanced accuracy and `r pct(eer, 2)` EER, reported in @sec-siam -- is noticeably lower than the validation AUC above 99.8% seen during tuning. The difference is partly explained by pair composition: same-digit test pairs reach a much higher AUC than cross-digit pairs (@tbl-comp-siam-digit-comparison), and the network was trained only on same-digit pairs (@sec-siam). It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.
 
 ```{=html}
 <!-- =====================================================================
