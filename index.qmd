@@ -1,5 +1,5 @@
 ---
-title: "Who wrote this digit? Writer identification with CNNs and Siamese networks"   # working title – change freely
+title: "Who wrote this digit? Writer identification with CNNs and Siamese networks"
 # Title page lines above the title (the title page layout is in assets/title-block.html)
 institution: "University of Cape Town"
 department: "Department of Statistical Sciences"
@@ -22,23 +22,17 @@ execute:
   echo: false      # code is hidden in the report; it is all in this file and in R/ on GitHub
   warning: false
   message: false
-
-# Shows the coloured "Owner / what goes here" boxes.
-# Set to false before submitting – every box disappears from the rendered report.
-show-guidance: false
 ---
 
 ```{r}
 #| label: setup
 #| include: false
-# OWNER: Jesse (A). Shared set-up – tell the group before changing anything here.
 library(tidyverse)
 set.seed(2026)
 theme_set(theme_minimal(base_size = 11))
 
-# TRUE once every listed file exists. Use it on any chunk that needs a file:
-#   #| eval: !expr ready("outputs/cnn_test_predictions.csv")
-# so the report still renders before that file has been produced.
+# TRUE once every listed file exists. Chunks that read a results file use it in
+# their eval option, so the report still renders if that file is missing.
 ready <- function(...) all(file.exists(c(...)))
 
 # Shared formatting helper (also redefined identically in the CNN section).
@@ -50,50 +44,7 @@ if (ready("data/handwriting.rds")) {
 }
 ```
 
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="How to use this file (hidden when show-guidance: false)"}
-**Colour = owner.** Green = Jesse (Role A, data, splits and comparison) · Blue = Maxine (Role B, CNN) · Red = Nicole (Role C, Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).
-
-| Report section | Task | Owner | Words | Reads |
-|---------------|---------------|---------------|---------------|---------------|
-| Introduction | 8 | Not assigned yet | ≈ 400 | – |
-| Data and exploration | 1 | Jesse (A) | ≈ 550 | `data/handwriting.rds` |
-| Evaluation design | 4 | Jesse (A) | ≈ 550 | `data/splits.csv` |
-| Writer identification with a CNN | 2 | Maxine (B) | ≈ 650 | `outputs/cnn_test_predictions.csv`, `outputs/cnn_history.csv` |
-| Same-writer matching with a Siamese network | 3 | Nicole (C) | ≈ 650 | `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv` |
-| Hyperparameter sensitivity: CNN | 5 | Maxine (B) | ≈ 300 | `outputs/tuning_cnn.csv` |
-| Hyperparameter sensitivity: Siamese | 5 | Nicole (C) | ≈ 300 | `outputs/tuning_siamese.csv` |
-| CNN vs Siamese: CNN results by digit and session | 6 | Maxine (B) | ≈ 300 | Maxine's own outputs |
-| CNN vs Siamese: Siamese results by digit and session | 6 | Nicole (C) | ≈ 300 | Nicole's own outputs |
-| CNN vs Siamese: side by side | 6 | Jesse (A) | ≈ 400 | `outputs/comparison.csv` |
-| Conclusion | 8 | Not assigned yet | ≈ 300 | – |
-| **Total** |  |  | **≈ 4,700** | Limit 5,000 (excludes AI use statement, appendices, captions, references) |
-
-**House rules**
-
-- Edit only your own sections. To change someone else's, tell them or open a pull request.
-- Write in your own words. The brief allows AI for proofreading only, not first drafts.
-- Model training lives in scripts (`R/` or `python/`) that write to `outputs/`. The report only reads those files, so it renders in seconds. Commit the scripts too: that is what makes it reproducible.
-- Label figures and tables with your section key: `eda`, `split`, `cnn`, `siam`, `tune`, `comp` (e.g. `fig-cnn-digit`, `tbl-siam-metrics`). Cross-reference with `@fig-cnn-digit` and `@sec-cnn`.
-- Numbers in the text come from inline `r` code reading the output files, never typed by hand. They then stay correct when a model is re-run.
-- Guard every chunk that needs a file with `#| eval: !expr ready("path")`.
-- Keep a note of your AI use per task as you go. It goes in the appendix table at the end.
-:::
-::::
-
-```{=html}
-<!-- =====================================================================
-     INTRODUCTION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 400 words
-     ===================================================================== -->
-```
-
 # Introduction {#sec-intro}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-tip title="Owner: Nicole (Role C) · Task 8 · ≈ 400 words"}
-**Must cover:** the two questions (which of 20 known writers wrote this image, and did the same person write these two images?) · the data in one paragraph (20 writers × 5 digits × 5 sessions × 50 replicates, simulated) · why writer identification matters in practice · a one-line roadmap of the report.
-:::
-::::
 
 Handwriting contains characteristics that can distinguish one writer from another, even when different people write the same digit. However, recognising these differences becomes more difficult when handwriting changes across sessions or when different digits are compared. This report investigates two related tasks: identifying which of 20 known writers produced a handwritten digit, and determining whether two digit images were produced by the same writer.
 
@@ -101,32 +52,7 @@ The dataset contains 25,000 simulated greyscale images from 20 writers, covering
 
 Two neural network approaches are evaluated. A convolutional neural network (CNN) predicts writer identity as a 20-class classification problem, while a Siamese network learns an embedding space in which images from the same writer should be closer together than those from different writers. We compare their performance, investigate hyperparameter sensitivity, and examine how digit identity and session variation affect the results. The aim is to assess not only how accurately each model performs, but also which approach is better suited to identification or verification and where its limitations lie.
 
-```{=html}
-<!-- =====================================================================
-     DATA AND EXPLORATION  ·  Task 1  ·  OWNER: Jesse (A)  ·  ≈ 550 words
-     ===================================================================== -->
-```
-
 # Data and exploration {#sec-eda}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-tip title="Owner: Jesse (Role A) · Task 1 · ≈ 550 words"}
-**The brief asks for:** examples across people, digits and sessions · the visible sources of variation · the limitations of this simulated data.
-
-**Answer these:**
-
-- What differs between writers? Between sessions of the same writer? Between replicates within one session?
-- Which simple features vary most (ink amount, width and height, centre of mass, slant)? Do they vary more by writer or by session?
-- How much variance sits between writers, between sessions and within a session (variance decomposition)?
-- Do writers separate in a PCA of the raw pixels? Do sessions?
-- What makes this data easier or less realistic than real handwriting (simulated, digits 0–4 only, 20 writers, perfectly balanced, clean and centred images)?
-
-**Exhibits (labels to use):** `fig-eda-grid` writers × digits · `fig-eda-sessions` one writer and digit across sessions 1–5 · `fig-eda-means` mean and difference images · `fig-eda-features` feature boxplots · `tbl-eda-variance` variance decomposition · `fig-eda-pca` PCA coloured by writer and session.
-
-**Reads:** `data/handwriting.rds`.
-EDA is fast enough to run inside this file.
-:::
-::::
 
 The data is 25,000 simulated images: 20 writers × 5 digits × 5 sessions × 50 replicates, each a 28 × 28 greyscale digit.
 @fig-eda-grid lines up one writer per row and one digit per column: digit shape dominates what the eye sees, but within a row each writer keeps a visibly consistent stroke width and slant across all five digits -- the thing we are hoping a model can key on.
@@ -138,7 +64,7 @@ Replicates *within* one session, by contrast, look close to identical -- the mai
 #| fig-cap: "One image per writer (rows) and digit (columns), session 1, replicate 1."
 #| fig-height: 10
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: grid of example images across writers and digits
+# Grid of example images across writers and digits
 show_img <- function(m, col = gray.colors(256, start = 1, end = 0), zlim = c(0, 255), ...) {
   image(t(m)[, nrow(m):1], col = col, axes = FALSE, asp = 1, zlim = zlim, ...)
 }
@@ -160,7 +86,7 @@ mtext("writer", side = 2, outer = TRUE, line = 1.7, cex = 0.9)
 #| label: fig-eda-sessions
 #| fig-cap: "Writer 1's digit 0, four replicates (rows) across sessions 1–5 (columns). Later sessions show a visibly heavier, more angular stroke."
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: same writer and digit across the five sessions, a few replicates each
+# Same writer and digit across the five sessions, a few replicates each
 w0 <- 1; d0 <- 0
 par(mfrow = c(4, 5), mar = c(0.1, 0.1, 0.1, 0.1), oma = c(1, 3, 2, 1))
 for (r in 1:4) {
@@ -182,7 +108,7 @@ The resulting blue/red difference images drift in a consistent direction session
 #| fig-cap: "Top: mean digit-0 image per writer. Bottom: four writers' session means minus their own overall mean (blue = less ink, red = more ink than that writer's average), showing how each writer's stroke shifts across sessions."
 #| fig-height: 9
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: mean and difference images
+# Mean and difference images
 div_col <- colorRampPalette(c("steelblue", "white", "firebrick"))(256)
 mean_image <- function(idx) apply(hw$images[idx, , , 1], c(2, 3), mean)
 
@@ -225,7 +151,7 @@ Digit mostly moves ink, width and height, which is just digit shape (a 1 uses le
 #| fig-cap: "Five simple image features, boxplotted by writer, session and digit. Ink, width, height and slant separate clearly by writer; none separate visibly by session; digit mostly affects ink, width and height (shape), as expected."
 #| fig-height: 8
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: ink amount, width/height, centre of mass, slant
+# Ink amount, width/height, centre of mass, slant
 rows_idx <- 1:28; cols_idx <- 1:28
 n_img <- dim(hw$images)[1]
 feat <- tibble(
@@ -279,7 +205,7 @@ ggplot(plot_df, aes(group_value, value)) +
 #| label: tbl-eda-variance
 #| tbl-cap: "Share of feature variance (after removing each feature's digit mean) between writers, between sessions within a writer, and within a session."
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: variance decomposition of the features above
+# Variance decomposition of the features above
 # Each feature is first centred on its own digit mean, so digit-shape
 # differences (which dominate raw ink/width/height) don't swamp the
 # writer/session decomposition we actually care about here.
@@ -321,7 +247,7 @@ Across every feature, the between-session share stays small (at most `r max(vt$s
 #| fig-cap: "PCA of raw pixels. Top: a 5,000-image sample across all digits — clusters correspond to digit shape, not writer, and writers don't visibly separate once digit is mixed in. Bottom: restricting to digit 0 only (removing the digit-shape confound) reveals tight, clearly separated per-writer clusters, which are not further split by session — writer style is a strong pixel-level signal once digit is held fixed."
 #| fig-height: 9
 #| eval: !expr ready("data/handwriting.rds")
-# Jesse: PCA of pixels
+# PCA of pixels
 library(patchwork) # only used in this chunk; not added to shared setup
 set.seed(2026)
 idx_all <- sample(nrow(meta), 5000)
@@ -372,33 +298,7 @@ This is simulated data, and that matters for how far these conclusions travel.
 The images are clean, centred and noise-free in a way real handwriting scans rarely are; there are only 20 writers and 5 digits (0-4, not the full 0-9), each perfectly balanced with 50 replicates per writer/digit/session; and "session" here is a single simulated drift process rather than genuinely different pens, moods or paper found in real handwriting collected over time.
 The patterns above -- a dominant, stable writer signal and a small, gradual session effect -- are the patterns this particular simulator was built to produce, so they should be read as "this method can find writer-specific signal when it is there and well-behaved," not as evidence of how well it would do on messier, real handwriting.
 
-```{=html}
-<!-- =====================================================================
-     EVALUATION DESIGN  ·  Task 4  ·  OWNER: Jesse (A)  ·  ≈ 550 words
-     ===================================================================== -->
-```
-
 # Evaluation design {#sec-split}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-tip title="Owner: Jesse (Role A) · Task 4 · ≈ 550 words"}
-**The brief asks for:** the chosen train, validation and test strategy and why · what kind of generalisation the evaluation represents · possible leakage or optimistic performance.
-
-**Answer these:**
-
-- Main split (both models): sessions 1–3 train, 4 validation, 5 test. What does it test? (A known writer on a new day.)
-- Unseen-writer split (Siamese only): 14 / 3 / 3 writers. What does it test? (A person the model has never seen.) Why can the CNN not do this?
-- What is validation used for (early stopping, tuning, the Siamese threshold)? Why is test touched only once?
-- Optimism experiment: how much better does a simple baseline look on a random image split than on the session-held-out split?
-- Leakage risks: near-duplicate replicates within a session, pairs built before splitting, a threshold tuned on test, the same image in training and test pairs.
-- Why might results still be optimistic even with a clean split (simulated data, 20 writers)?
-
-**Exhibits:** `tbl-split-counts` images per split · `tbl-split-optimism` (or `fig-split-optimism`) baseline accuracy on the two splits.
-
-**Reads:** `data/splits.csv`.
-**Code:** `R/00_data.R` writes the split; `R/optimism_baseline.R` runs the experiment.
-:::
-::::
 
 Both models share one main split, `split_main`, built by session rather than by image: sessions 1-3 are train, session 4 is validation, and session 5 is held out entirely for test (@tbl-split-counts).
 Splitting by session rather than randomly means every test image comes from a session the model never trained on, for a writer it *has* seen -- the evaluation this represents is "can you recognise a known writer's handwriting on a new day", which is the realistic use case (a person enrols once, then is checked against later samples) and the harder, more honest version of the writer-identification question.
@@ -410,7 +310,7 @@ The Siamese network additionally uses `split_writer`, which instead holds out wh
 #| tbl-cap: "Number of images in each split. split_main is the session-based split used by both models (sessions 1-3/4/5 = train/val/test); split_writer is the writer-held-out split (14/3/3 writers = train/val/test), used only for the Siamese network's unseen-writer experiment."
 #| eval: !expr ready("data/splits.csv")
 splits <- read_csv("data/splits.csv", show_col_types = FALSE)
-# Jesse: counts by split_main and split_writer
+# Counts by split_main and split_writer
 bind_rows(
   splits %>% count(split = split_main) %>% mutate(strategy = "split_main (session-based)"),
   splits %>% count(split = split_writer) %>% mutate(strategy = "split_writer (writer-based)")
@@ -452,37 +352,12 @@ Second, the Siamese threshold is chosen on validation pairs only (@sec-siam) and
 Third, the same image never appears in more than one pair-role that would let information leak between train and test pairs, since pairs are drawn after the split and only from the appropriate session(s).
 Even so, results may still read as somewhat optimistic: with only 20 writers the models are solving a much easier closed-set problem than real-world identification among thousands of candidates, and the data is simulated, so the writer and session effects are exactly the effects the simulator was built to produce (@sec-eda) -- a real-world, cross-scanner, cross-pen deployment would likely see a larger session-style gap than the one measured here.
 
-```{=html}
-<!-- =====================================================================
-     CNN  ·  Task 2  ·  OWNER: Maxine (Role B)  ·  ≈ 650 words
-     ===================================================================== -->
-```
-
 # Writer identification with a CNN {#sec-cnn}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Maxine (Role B) · Task 2 · ≈ 650 words"}
-**The brief asks for:** a prediction task whose response is writer ID · a CNN, built and evaluated · overall writer identification performance · performance compared by digit · what the evaluation measures mean in real-world terms.
-
-**Answer these:**
-
-- What exactly is predicted? (Input: one 28 × 28 image. Output: one of 20 known writers, a closed set.) Point to @sec-split for the split rather than repeating it.
-- Architecture and training: layers, embedding size, optimiser, learning rate, batch size, epochs, early stopping rule.
-- Overall test results: accuracy, top-3 accuracy, macro-F1. Which writers get confused with each other?
-- Accuracy by digit, with 95% intervals (1,000 test images per digit).
-- What do the numbers mean in practice? The chance of naming the right writer for a sample written on a new day; top-3 as a shortlist for a human examiner; the model always names one of the 20, even for an unknown writer.
-
-**Exhibits:** `tbl-cnn-arch` layers · `fig-cnn-training` loss and accuracy curves · `tbl-cnn-metrics` overall metrics · `fig-cnn-digit` accuracy by digit · `fig-cnn-confusion` confusion matrix · `fig-cnn-writer` accuracy by writer.
-
-**Reads:** `outputs/cnn_test_predictions.csv`, `outputs/cnn2_test_predictions.csv`, `outputs/cnn_test_scores.csv`, `outputs/cnn_history.csv`, `outputs/cnn2_history.csv`.
-**Code:** `R/cnn.R`, `R/cnn_functions.R`.
-:::
-::::
 
 ```{r}
 #| label: cnn-helpers
 #| include: false
-# OWNER: Maxine (B). Files and helpers for the CNN results (Tasks 2 and 5).
+# Files and helpers for the CNN results (Tasks 2 and 5).
 cnn_files <- c("outputs/cnn_test_predictions.csv", "outputs/cnn2_test_predictions.csv",
                "outputs/cnn_test_scores.csv", "outputs/cnn_history.csv", "outputs/cnn2_history.csv")
 model_labels <- c(cnn3 = "3 conv layers (best CNN, shared backbone)", cnn2 = "2 conv layers (original encoder)")
@@ -504,7 +379,7 @@ macro_f1 <- function(true, pred, classes = 1:20) {
 #| label: cnn-results
 #| include: false
 #| eval: !expr ready(cnn_files)
-# Maxine: test results of the two final CNNs (written by R/cnn.R)
+# Test results of the two final CNNs (written by R/cnn.R)
 cnn_pred <- bind_rows(
   read_csv("outputs/cnn_test_predictions.csv",  show_col_types = FALSE) %>% mutate(model = "cnn3"),
   read_csv("outputs/cnn2_test_predictions.csv", show_col_types = FALSE) %>% mutate(model = "cnn2")
@@ -678,34 +553,7 @@ cnn_pred %>%
   theme(legend.position = "bottom")
 ```
 
-```{=html}
-<!-- =====================================================================
-     SIAMESE NETWORK  ·  Task 3  ·  OWNER: Nicole (Role C)  ·  ≈ 650 words
-     ===================================================================== -->
-```
-
 # Same-writer matching with a Siamese network {#sec-siam}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Nicole (Role C) · Task 3 · ≈ 650 words"}
-**The brief asks for:** a Siamese network that estimates whether two images come from the same writer · contrastive or triplet loss · how training examples are constructed · how matching performance is evaluated.
-
-**Answer these:**
-
-- Architecture: shared encoder (same backbone as the CNN), embedding size, distance.
-- Loss: contrastive or triplet, the margin, and why.
-- Training examples: how positive and negative pairs are sampled, why digit is held fixed, the same/different balance, cross-session positives, and pairs built only after splitting.
-- Threshold: chosen on validation pairs by balanced accuracy.
-- Test results on `data/test_pairs.csv`: ROC AUC, equal error rate, balanced accuracy, and distance histograms for same vs different pairs.
-- Unseen-writer experiment: the same metrics on the 3 held-out writers.
-- What the errors mean: a false accept matches two different writers; a false reject misses a true match. Which matters more depends on the use.
-
-**Exhibits:** `fig-siam-pairs` example positive and negative pairs · `fig-siam-dist` distance histograms · `fig-siam-roc` ROC curves · `tbl-siam-metrics` main split vs unseen writers.
-
-**Reads:** `outputs/siamese_test_distances.csv`, `outputs/siamese_history.csv`.
-**Code:** `R/siamese.R` (or `python/siamese.py`).
-:::
-::::
 
 A Siamese network was built to decide whether two handwritten digit images came from the same writer, rather than identifying one of the 20 known writers as the CNN does. This makes it suitable for verifying handwriting from writers not seen during training.
 
@@ -795,15 +643,9 @@ ggplot(roc_df, aes(false_positive_rate, sensitivity)) +
 #| label: siam-metrics-prep
 #| include: false
 #| eval: !expr ready("outputs/siamese_unseen_writer_results.csv")
-# Nicole: these three numbers (and the threshold quoted in the text below)
-# come from your own run of Siamese.R, not from outputs/siamese_test_distances.csv
-# -- that file hasn't been re-exported from the same run, so recomputing AUC
-# from it gives a different number (0.844) to what's reported here. Kept as
-# typed-in constants for now, matching the Overleaf draft, rather than
-# computed from that file. When you re-run and re-export
-# outputs/siamese_test_distances.csv (and ideally also save this summary to
-# its own CSV, e.g. outputs/siamese_test_results.csv), switch this back to
-# reading it in, the way every other number in this report is sourced.
+# Main-split test results from the Siamese.R run reported in the text, typed in.
+# outputs/siamese_test_distances.csv was saved from a different run, so
+# recomputing from it gives a slightly different AUC (0.844).
 siam_auc     <- 0.8512
 eer          <- 0.2371
 siam_bal_acc <- 0.7457
@@ -831,40 +673,9 @@ tibble(
   knitr::kable()
 ```
 
-```{=html}
-<!-- =====================================================================
-     HYPERPARAMETER SENSITIVITY  ·  Task 5  ·  OWNERS: Maxine (CNN) and Nicole (Siamese)
-     ===================================================================== -->
-```
-
 # Hyperparameter sensitivity {#sec-tune}
 
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="Shared section · Task 5"}
-**The brief asks for:** a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied.
-Maxine writes the CNN part and Nicole the Siamese part.
-Use the same plot style so the two figures read alike.
-:::
-::::
-
-<!-- ---- CNN tuning · OWNER: Maxine (Role B) · ≈ 300 words ---- -->
-
 ## CNN {#sec-tune-cnn}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Maxine (Role B) · Task 5 · ≈ 300 words"}
-**Answer these:**
-
-- Which 2–3 hyperparameters were varied, over which values, and why those?
-- Design: grid or random search, number of configurations, seeds per configuration. Chosen on validation only.
-- How much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?
-- The chosen configuration and its single test result.
-
-**Exhibits:** `fig-tune-cnn` sensitivity plot · `tbl-tune-cnn` effect vs seed noise · `tbl-tune-stopping` stopping rules · `tbl-tune-reg` regularisation check.
-**Reads:** `outputs/tuning_cnn.csv`, `outputs/tuning_cnn_valacc_p5.csv`, `outputs/tuning_cnn_valacc_p10.csv`, `outputs/tuning_cnn_valacc_p10_e150.csv`, `outputs/tuning_cnn_reg.csv`.
-**Code:** `R/tune_cnn.R`, `R/tune_cnn_valacc.R`, `R/tune_cnn_reg.R`.
-:::
-::::
 
 The CNN hyperparameter search varied dropout (0, 0.3, 0.5), depth (one to three convolutional layers) and learning rate (0.0003, 0.001, 0.003), one setting at a time. Interactions were not tested; runs used three seeds, one validation session, loss-based stopping (patience 5) and a 50-epoch cap. In @fig-tune-cnn, three layers with dropout 0.3 and learning rate 0.001 performed best, averaging 49.9% validation accuracy. Depth had the clearest effect. Dropout results (45%, 42%, 43%) were within seed variation, while learning rate 0.003 was less stable (spread 0.052 versus about 0.025). These findings should be interpreted cautiously given the limited search design.
 ```{r}
@@ -984,31 +795,14 @@ reg_sum %>%
   knitr::kable()
 ```
 
-<!-- ---- Siamese tuning · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
-
 ## Siamese network {#sec-tune-siam}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Nicole (Role C) · Task 5 · ≈ 300 words"}
-**Answer these:**
-
-- Which hyperparameters were varied (e.g. margin, embedding size, learning rate, pairs per epoch), over which values, and why?
-- Design: number of configurations and seeds. Chosen on validation AUC only.
-- How much does validation AUC move across each hyperparameter, compared with seed-to-seed noise?
-- The chosen configuration and its single test result.
-
-**Exhibits:** `fig-tune-siam`.
-**Reads:** `outputs/tuning_siamese.csv`.
-**Code:** `R/tune_siamese.R`.
-:::
-::::
 
 A limited hyperparameter search tested how sensitive the Siamese network was to learning rate (0.0005, 0.001 and 0.002), contrastive margin (0.5, 1 and 1.5) and embedding dimension (16, 32 and 64). These control how quickly the network learns, how far apart different-writer embeddings are encouraged to be, and how much information the embedding can represent. Each configuration was evaluated using two seeds, varying one hyperparameter at a time from the baseline (learning rate 0.001, margin 1, embedding dimension 32) shown in @fig-tune-siam and @tbl-tune-siam.
 
 ```{r}
 #| label: fig-tune-siam
 #| fig-cap: "Siamese validation AUC across hyperparameter values (points = seeds)."
-#| eval: !expr ready("outputs/tuning_siamese.csv")
+#| eval: !expr ready("outputs/siamese_tuning_results.csv")
 tune_siam <- read_csv("outputs/siamese_tuning_results.csv", show_col_types = FALSE)
 
 tune_long <- bind_rows(tune_siam |> filter(margin == 1, embedding_units == 32) |> mutate(hyperparameter = "Learning rate", value = learning_rate), tune_siam |> filter(learning_rate == 0.001, embedding_units == 32) |> mutate(hyperparameter = "Contrastive margin", value = margin), tune_siam |>
@@ -1027,7 +821,7 @@ tune_long |> mutate(label = format(value, scientific = FALSE, trim = TRUE, drop0
 ```{r}
 #| label: tbl-tune-siam
 #| tbl-cap: "Sensitivity of Siamese validation AUC to individual hyperparameters across two random seeds. The final column compares the range of configuration means with the pooled within-configuration seed standard deviation."
-#| eval: !expr ready("outputs/tuning_siamese.csv")
+#| eval: !expr ready("outputs/siamese_tuning_results.csv")
 seed_sd_siam <- tune_siam %>%
   group_by(learning_rate, margin, embedding_units) %>%
   summarise(v = var(val_auc), .groups = "drop") %>%
@@ -1052,40 +846,10 @@ The highest mean validation AUC among the one-factor comparisons comes from the 
 
 Test performance on the main split -- `r sprintf("%.4f", siam_auc)` AUC, `r pct(siam_bal_acc, 2)` balanced accuracy and `r pct(eer, 2)` EER, reported in @sec-siam -- is noticeably lower than the validation AUC above 99.8% seen during tuning. The difference is partly explained by pair composition: same-digit test pairs reach a much higher AUC than cross-digit pairs (@tbl-comp-siam-digit-comparison), and the network was trained only on same-digit pairs (@sec-siam). It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.
 
-```{=html}
-<!-- =====================================================================
-     CNN vs SIAMESE  ·  Task 6  ·  OWNERS: Maxine, Nicole, Jesse
-     ===================================================================== -->
-```
-
 # CNN vs Siamese network: digits and sessions {#sec-comp}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="Shared section · Task 6"}
-**The brief asks for:** a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance.
-Maxine and Nicole each report their own model's digit and session results; Jesse then compares the two side by side.
-:::
-::::
-
-<!-- ---- CNN by digit and session · OWNER: Maxine (Role B) · ≈ 300 words ---- -->
 
 ## CNN results by digit and session {#sec-comp-cnn}
 
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-note title="Owner: Maxine (Role B) · Task 6 · ≈ 300 words"}
-**Answer these:**
-
-- Digit-only CNNs (one model per digit): which digit alone identifies writers best and worst?
-- Does that ranking match the per-digit accuracy of the full model in @sec-cnn?
-- Leave-one-session-out: accuracy for each held-out session. Is any session unusual?
-
-**Exhibits:** `fig-comp-cnn-loso` accuracy by held-out session · `tbl-comp-cnn-digit-session` accuracy by digit and session · `fig-comp-cnn-digitonly` digit-only vs all-digit CNN.
-**Reads:** `outputs/cnn_loso.csv`, `outputs/cnn_loso_by_digit.csv`, `outputs/cnn_digit_only.csv`.
-**Code:** `R/cnn_digit_session.R`.
-:::
-::::
-
-<!-- Maxine: write the Task 6 (CNN) text in your own words around these exhibits. -->
 To assess session effects, the three-layer CNN was trained on three sessions, stopped on a fourth and tested on the remaining session as a "new day." Each session served in turn as the test set. Grey points in @fig-comp-cnn-loso show results across three seeds.
 
 Accuracy ranged from 53.3% on session 4 to 69.5% on session 2, averaging 60.5%. This range was 7.6 times seed variation, indicating a strong session effect. The main test session, session 5, averaged 59.2% and was typical. Session 4 remained hardest despite being used for tuning, suggesting it was more difficult for the model.
@@ -1159,22 +923,7 @@ ggplot(digit_cmp, aes(factor(digit), accuracy, colour = model)) +
   theme(legend.position = "bottom")
 ```
 
-<!-- ---- Siamese by digit and session · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
-
 ## Siamese results by digit and session {#sec-comp-siam}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-important title="Owner: Nicole (Role C) · Task 6 · ≈ 300 words"}
-**Answer these:**
-
-- AUC by digit: which digits separate writers best and worst?
-- Same-session vs cross-session positive pairs: how much larger are distances across sessions?
-- Cross-digit pairs: does writer identity carry across digits?
-
-**Exhibits:** `fig-comp-siam-digit` · `fig-comp-siam-session`.
-**Reads:** `outputs/siamese_test_distances.csv`.
-:::
-::::
 
 The Siamese network was also evaluated by digit and session to examine which conditions made writer matching easier or harder.
 
@@ -1182,7 +931,6 @@ The Siamese network was also evaluated by digit and session to examine which con
 #| label: fig-comp-siam-digit
 #| fig-cap: "Siamese matching AUC by digit."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
-
 
 siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FALSE)
 
@@ -1255,26 +1003,7 @@ tibble(
 
 @tbl-comp-siam-digit-comparison shows the same limitation as @sec-tune-siam when comparing different digits: same-digit AUC is far higher than cross-digit AUC. This is consistent with the network having been trained only on same-digit pairs (@sec-siam): it learned to compare handwriting styles when digit shape was held fixed, but transfers less effectively when the two images represent different digits. Together, these results show that the Siamese network learns useful writer-specific information, but matching becomes less reliable when handwriting changes across sessions or digit identities. Training on a wider variety of genuine pairs may help improve robustness.
 
-<!-- ---- Side by side · OWNER: Jesse (A) · ≈ 400 words ---- -->
-
 ## Side by side {#sec-comp-both}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-tip title="Owner: Jesse (Role A) · Task 6 · ≈ 400 words"}
-**Answer these:**
-
-- With one script on the same test pairs, how do the PCA baseline, CNN and Siamese embeddings compare on AUC, equal error rate and nearest-centroid writer accuracy?
-- Which model suits which question (identify one of 20 known writers vs verify a pair), and what does each cost (e.g. retraining when a new writer is added)?
-- Do the digit rankings agree across the CNN, the Siamese network and the EDA?
-- How large is the session gap (same-session vs cross-session) for each model?
-- Critical caveats: simulated data, one test session, 20 writers.
-
-**Exhibits:** `tbl-comp-summary` · `fig-comp-digit` AUC by digit for PCA, CNN and Siamese.
-
-**Reads:** `outputs/comparison.csv`.
-**Code:** `R/eval_embeddings.R` (reads `outputs/cnn3_embeddings.csv`, `outputs/siamese_embeddings.csv`, `data/test_pairs.csv`).
-:::
-::::
 
 @sec-cnn and @sec-siam each score their model the way it was trained for: the CNN as a 20-way classifier, the Siamese network as a same/different matcher.
 To compare them directly, `R/eval_embeddings.R` scores all three embedding spaces -- a PCA baseline (the top 32 principal components of pixels, fitted on a training-session sample, giving the CNN and Siamese embeddings a non-learned reference point), the CNN's 32-unit embedding layer, and the Siamese encoder's 32-unit embedding -- on the exact same `data/test_pairs.csv` pairs and the exact same nearest-centroid identification task (classify a session-5 test image to whichever training writer's embedding centroid it's closest to).
@@ -1344,19 +1073,7 @@ The session gap -- how much farther apart same-writer pairs sit when they come f
 
 As with @sec-split, these numbers should be read with the data's limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) -- a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.
 
-```{=html}
-<!-- =====================================================================
-     CONCLUSION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 300 words
-     ===================================================================== -->
-```
-
 # Conclusion {#sec-conclusion}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-tip title="Owner: Nicole (Role C) · Task 8 · ≈ 300 words"}
-**Must cover:** the answer to each question in one or two sentences · the main limitation · what you would do next with more time or real data.
-:::
-::::
 
 The results show that writer-specific information can be learned from handwritten digits, but performance depends strongly on the evaluation design and the type of comparison being made. Exploratory analysis found clear differences between writers, while session changes introduced additional variation. This was reflected in the baseline results: a simple classifier achieved 93.0% accuracy under a random image split but only 45.9% when an entire session was held out. Random splitting therefore gives an overly optimistic impression of how well a model recognises handwriting from a new session.
 
@@ -1366,39 +1083,9 @@ The Siamese network achieved a test ROC AUC of `r sprintf("%.3f", siam_auc)` and
 
 These findings are limited by the use of clean, simulated handwriting from only 20 writers and five digits. Future work could evaluate both models on real handwriting collected across more sessions and writing conditions, while including cross-digit pairs during Siamese training to improve generalisation. Overall, the study shows that both approaches can capture writer-specific characteristics, but their usefulness depends on the task and how well they handle changes in handwriting.
 
-# References {.unnumbered}
 
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="Owner: not assigned yet"}
-Add a `references.bib` file and `bibliography: references.bib` to the YAML header, then cite with `[@key]`.
-The list appears here automatically.
-:::
-::::
-
-::: {#refs}
-:::
-
-```{=html}
-<!-- =====================================================================
-     APPENDICES  ·  not counted in the 5,000 words
-     ===================================================================== -->
-```
-
-# Plagiarism declaration {.appendix}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="Owner: not assigned yet"}
-Paste the course's standard plagiarism declaration here, with all three names.
-:::
-::::
 
 # AI use statement {.appendix}
-
-:::: {.content-visible when-meta="show-guidance"}
-::: {.callout-warning title="Each person fills the rows for their own tasks"}
-The brief asks, for each task: (a) what tool you used, (b) what you used it for, (c) if and how you checked its outputs, and (d) how much of what it produced you ended up using.
-:::
-::::
 
 Condensed from the dated log in [`AI_USE_LOG.md`](https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md) in the repository.
 
