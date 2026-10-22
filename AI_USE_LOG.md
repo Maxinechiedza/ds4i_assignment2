@@ -38,4 +38,8 @@ Columns:
 
 | Date | Task | Tool | Prompt / what for | Checked how | Used |
 |---|---|---|---|---|---|
-| | | | | | |
+| 2026-10-14 | 3 | ChatGPT | Helped troubleshoot the Siamese network R code, including pair construction, model training, contrastive loss and evaluation metrics. | Inspected all suggested edits to the code and ran in RStudio, inspected model outputs, pair construction and evaluation results. | Edited, some |
+| 2026-10-18 | 5 | ChatGPT | Assisted with hyperparameter tuning, and plotting learning rate, margin and embedding dimension sensitivity. | Inspected all suggested edits to the tuning experiments and ran in R, checked the CSV outputs, seed variability and plotted results. | Edited, most |
+| 2026-10-19 | 3, 6 | ChatGPT | Helped refine Siamese figures, including positive/negative pairs, distance distributions, ROC curves, digit-level performance and session effects. | Ran all suggested edits to the plotting code, inspected the figures and compared results with the saved output files. | Edited, some |
+| 2026-10-20 | 3, 5, 6 | ChatGPT | Reviewed and revised the Siamese analysis and results write-up for clarity, structure, consistency and interpretation. | Reviewed wording and incorporated edits. | Edited, some |
+| 2026-10-21 | 8 | ChatGPT | Assisted with drafting and refining the report introduction and conclusion, including summarising the CNN and Siamese findings.. | Reviewed the suggestions against the report's results and model comparisons. | Edited, some |
