@@ -23,8 +23,6 @@ Columns:
 
 ## Maxine (Role B)
 
-Draft rows written with Claude on 2026-10-20 from our conversation; cells marked [check] still need my confirmation.
-
 | Date | Task | Tool | Prompt / what for | Checked how | Used |
 |---|---|---|---|---|---|
 | 2026-09-28 | 7, 8 | Claude (Anthropic) | Planned the 3-person work split for Tasks 1–6 (Work Split doc) and drafted the report template: `index.qmd` with owner boxes and figure labels, `_quarto.yml` | We read and adjusted the plan; template rendered with Quarto | Most, edited |
