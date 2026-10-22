@@ -21,7 +21,7 @@ execute:
 
 # Shows the coloured "Owner / what goes here" boxes.
 # Set to false before submitting – every box disappears from the rendered report.
-show-guidance: true
+show-guidance: false
 ---
 
 ```{r}
@@ -532,7 +532,7 @@ tribble(
   knitr::kable(align = "llrl")
 ```
 
-Both CNNs were trained on sessions 1–3 and validated on session 4. The grey dashed lines in @fig-cnn-training mark the epochs with the best validation accuracy; orange and blue lines show training and validation, respectively. The three-layer model reaches 92% training accuracy at epoch 13, suggesting it memorises the training sessions, while validation accuracy remains near r pct(cnn_key$val3). Its validation loss is lowest at epoch 3, then rises to 2.51 by epoch 13, indicating overfitting and overconfidence. The two-layer model appears to underfit: training accuracy reaches 60% only at epoch 60, while validation accuracy rises steadily. Its validation loss follows a similar but slower pattern, reaching a minimum of 1.69 at epoch 45 before increasing to 1.82 at the selected epoch, 60.
+Both CNNs were trained on sessions 1–3 and validated on session 4. The grey dashed lines in @fig-cnn-training mark the epochs with the best validation accuracy; orange and blue lines show training and validation, respectively. The three-layer model reaches 92% training accuracy at epoch 13, suggesting it memorises the training sessions, while validation accuracy remains near `r pct(cnn_key$val3)`. Its validation loss is lowest at epoch 3, then rises to 2.51 by epoch 13, indicating overfitting and overconfidence. The two-layer model appears to underfit: training accuracy reaches 60% only at epoch 60, while validation accuracy rises steadily. Its validation loss follows a similar but slower pattern, reaching a minimum of 1.69 at epoch 45 before increasing to 1.82 at the selected epoch, 60.
 ```{r}
 #| label: fig-cnn-training
 #| fig-cap: "Training (sessions 1–3) and validation (session 4) curves of the two final CNNs. The dashed line marks the epoch with the best validation accuracy, whose weights were kept."
