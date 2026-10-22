@@ -30,9 +30,5 @@ Repository: https://github.com/Maxinechiedza/ds4i_assignment2
 4. **Commit small, push often.** Tick your files, write a short message, Commit, then Push (green arrow).
 5. **Merge through a pull request.** On GitHub, open a pull request into `main`; another member reviews and merges it.
 6. **Stay in your lane.** Edit only your own sections of `index.qmd` and your own scripts, so merge conflicts stay rare.
-7. **Leave `docs/` to Maxine.** Only Maxine renders the site and commits `docs/`, from `main`. If you render to preview, don't tick the `docs/` files when you commit.
+7. **Website renders go through a pull request too.** Anyone can renders the site, only after everyone's pull requests are merged into `main`. She renders on a short-lived `render` branch and merges it through a pull request, like any other change. If you render to preview on your own branch, don't tick the `docs/` files when you commit.
 
-## Publishing the website
-
-In RStudio's Terminal tab (not the Console) run `quarto render`, then commit and push `docs/`.
-GitHub Pages is set to deploy from the `main` branch, `/docs` folder.
