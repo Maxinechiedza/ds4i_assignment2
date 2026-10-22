@@ -707,6 +707,12 @@ cnn_pred %>%
 :::
 ::::
 
+A Siamese network was built to decide whether two handwritten digit images came from the same writer, rather than identifying one of the 20 known writers as the CNN does. This makes it suitable for verifying handwriting from writers not seen during training.
+
+The network uses two branches with shared weights, each processing a 28 × 28 greyscale image through the three-layer CNN encoder described in @sec-cnn. The encoder has convolutional layers with 16, 32 and 64 filters, pooling layers and a dense layer producing a 32-dimensional embedding. Euclidean distance measures the similarity between the two embeddings: smaller distances suggest the same writer, while larger distances suggest different writers.
+
+Training required pairs of images labelled as either positive (same writer) or negative (different writers), as illustrated in @fig-siam-pairs. We generated 12,000 training pairs and 3,000 validation pairs, with equal numbers of positive and negative pairs. Both images in each pair represented the same digit, so the network could not distinguish writers simply by recognising different digit shapes. Positive pairs were preferably drawn from different sessions to encourage the model to learn writer characteristics that remain consistent over time. Self-pairs were excluded, and pairs were constructed only after splitting the data to avoid leakage between training and evaluation.
+
 ```{r}
 #| label: fig-siam-pairs
 #| fig-cap: "Example positive (same writer) and negative (different writer) training pairs."
@@ -736,6 +742,10 @@ for (i in seq_len(nrow(example_pairs))) {
 
 mtext("Top row: positive pair | Bottom row: negative pair", outer = TRUE, side = 3, line = -0.5, cex = 0.9)
 ```
+
+The network was trained using contrastive loss, which pulls same-writer embeddings closer together and pushes different-writer embeddings apart. Positive pairs are penalised for large distances, while negative pairs are penalised when their distance falls below a margin of 1. Training used Adam with a learning rate of 0.001 and early stopping based on validation loss.
+
+To classify a pair as a match or non-match, a distance threshold is chosen to maximise balanced accuracy. Performance is then measured using ROC AUC, balanced accuracy and equal error rate (EER). ROC AUC measures how well genuine and different-writer pairs can be distinguished across thresholds, while EER is the point where false-acceptance and false-rejection rates are approximately equal. @fig-siam-dist shows that genuine pairs generally have smaller embedding distances than different-writer pairs, although the distributions overlap.
 
 ```{r}
 #| label: fig-siam-dist
@@ -782,10 +792,58 @@ ggplot(roc_df, aes(false_positive_rate, sensitivity)) +
 ```
 
 ```{r}
+#| label: siam-metrics-prep
+#| include: false
+#| eval: !expr ready("outputs/siamese_test_distances.csv", "outputs/siamese_unseen_writer_results.csv")
+# Computed directly from the saved test distances rather than typed by hand
+# (house rule above). NOTE: the threshold below is chosen and evaluated on
+# the same test pairs, because no separate validation-pair distances were
+# saved -- unlike the unseen-writer experiment, which does use a threshold
+# chosen on held-out validation writers. Saving a validation split for the
+# main experiment too (and persisting these summary numbers to outputs/,
+# the way every other section's numbers are) would remove this gap.
+siam_dist <- read_csv("outputs/siamese_test_distances.csv", show_col_types = FALSE)
+unseen    <- read_csv("outputs/siamese_unseen_writer_results.csv", show_col_types = FALSE)
+
+calc_auc <- function(labels, distances) {
+  scores <- -distances
+  n_pos <- sum(labels); n_neg <- sum(!labels)
+  (sum(rank(scores)[labels]) - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+}
+siam_auc <- calc_auc(siam_dist$same_writer, siam_dist$distance)
+
+eer_curve <- tibble(threshold = sort(unique(siam_dist$distance))) %>%
+  rowwise() %>%
+  mutate(pred_same = list(siam_dist$distance <= threshold),
+         fpr = mean(pred_same[[1]][!siam_dist$same_writer]),
+         fnr = mean(!pred_same[[1]][siam_dist$same_writer])) %>%
+  ungroup() %>%
+  select(threshold, fpr, fnr)
+
+eer_row   <- eer_curve %>% mutate(gap = abs(fpr - fnr)) %>% slice_min(gap, n = 1)
+eer       <- mean(c(eer_row$fpr, eer_row$fnr))
+pred_same <- siam_dist$distance <= eer_row$threshold
+siam_bal_acc <- mean(c(mean(pred_same[siam_dist$same_writer]),
+                        mean(!pred_same[!siam_dist$same_writer])))
+```
+
+@fig-siam-roc shows that the model distinguishes writers better than chance, but errors remain. A false acceptance incorrectly matches two different writers, while a false rejection fails to recognise two samples from the same writer. @tbl-siam-metrics summarises matching performance: on the 1,400 held-out test pairs (both same-digit and cross-digit), the network reaches `r sprintf("%.3f", siam_auc)` ROC AUC, an EER of `r pct(eer)`, and `r pct(siam_bal_acc)` balanced accuracy at the threshold where false-accept and false-reject rates are equal.
+
+An additional experiment tested whether the learned similarity measure transfers to writers excluded entirely from training. Unlike the main session-based split, this experiment used 14 training writers, three validation writers and three test writers. A separate model was trained from scratch, with its threshold selected using validation writers before evaluating the unseen test writers.
+
+The unseen-writer model achieved an AUC of `r sprintf("%.3f", unseen$Test_AUC)`, balanced accuracy of `r pct(unseen$Test_Balanced_Accuracy)` and EER of `r pct(unseen$Approx_EER)`, suggesting that the network learned features that transfer to new identities. However, these results should not be interpreted as an improvement over the main experiment: the unseen-writer evaluation used same-digit pairs only, while the main test set also included cross-digit pairs, making the two evaluations different in difficulty.
+
+```{r}
 #| label: tbl-siam-metrics
 #| tbl-cap: "Siamese matching performance: known writers on a new session vs unseen writers."
-#| eval: !expr ready("outputs/siamese_test_distances.csv")
-# Nicole: AUC, EER, balanced accuracy for both settings
+#| eval: !expr ready("outputs/siamese_test_distances.csv", "outputs/siamese_unseen_writer_results.csv")
+tibble(
+  Evaluation = c("Known writers, new session", "Unseen writers"),
+  `ROC AUC` = c(sprintf("%.3f", siam_auc), sprintf("%.3f", unseen$Test_AUC)),
+  EER = c(pct(eer), pct(unseen$Approx_EER)),
+  `Balanced accuracy` = c(pct(siam_bal_acc), pct(unseen$Test_Balanced_Accuracy))
+) %>%
+  knitr::kable()
 ```
 
 ```{=html}
@@ -960,6 +1018,8 @@ reg_sum %>%
 :::
 ::::
 
+A limited hyperparameter search tested how sensitive the Siamese network was to learning rate (0.0005, 0.001 and 0.002), contrastive margin (0.5, 1 and 1.5) and embedding dimension (16, 32 and 64). These control how quickly the network learns, how far apart different-writer embeddings are encouraged to be, and how much information the embedding can represent. Each configuration was evaluated using two seeds, varying one hyperparameter at a time from the baseline (learning rate 0.001, margin 1, embedding dimension 32) shown in @fig-tune-siam and @tbl-tune-siam.
+
 ```{r}
 #| label: fig-tune-siam
 #| fig-cap: "Siamese validation AUC across hyperparameter values (points = seeds)."
@@ -978,6 +1038,34 @@ tune_long |> mutate(label = format(value, scientific = FALSE, trim = TRUE, drop0
   scale_y_continuous(labels = scales::percent_format(accuracy = 0.01), limits=c(0.9975, 1)) +
   labs(x = NULL, y = "Validation AUC (session 4)")
 ```
+
+```{r}
+#| label: tbl-tune-siam
+#| tbl-cap: "Sensitivity of Siamese validation AUC to individual hyperparameters across two random seeds. The final column compares the range of configuration means with the pooled within-configuration seed standard deviation."
+#| eval: !expr ready("outputs/tuning_siamese.csv")
+seed_sd_siam <- tune_siam %>%
+  group_by(learning_rate, margin, embedding_units) %>%
+  summarise(v = var(val_auc), .groups = "drop") %>%
+  summarise(sqrt(mean(v))) %>%
+  pull()
+
+tune_long %>%
+  group_by(hyperparameter, value) %>%
+  summarise(mean_auc = mean(val_auc), .groups = "drop") %>%
+  group_by(hyperparameter) %>%
+  summarise(Values         = paste(format(value, scientific = FALSE, drop0trailing = TRUE), collapse = ", "),
+            `Mean AUC (%)` = paste(sprintf("%.3f", 100 * mean_auc), collapse = ", "),
+            range          = max(mean_auc) - min(mean_auc),
+            .groups = "drop") %>%
+  mutate(`Range (pp)`   = sprintf("%.3f", 100 * range),
+         `Range / SD`   = sprintf("%.2f", range / seed_sd_siam)) %>%
+  select(Hyperparameter = hyperparameter, Values, `Mean AUC (%)`, `Range (pp)`, `Range / SD`) %>%
+  knitr::kable()
+```
+
+The highest mean validation AUC among the one-factor comparisons comes from the baseline settings: learning rate 0.001, margin 1 and embedding dimension 32. Validation AUC remains above 99.8% on average across the tested values, so the overall differences are small; @tbl-tune-siam shows that some of these differences are comparable to the variation between seeds, so the results do not establish that the chosen configuration is globally optimal.
+
+Test performance on the main split -- `r sprintf("%.3f", siam_auc)` AUC, `r pct(siam_bal_acc)` balanced accuracy and `r pct(eer)` EER, reported in @sec-siam -- is noticeably lower than the validation AUC above 99.8% seen during tuning. The difference is partly explained by pair composition: same-digit test pairs reach a much higher AUC than cross-digit pairs (@tbl-comp-siam-digit-comparison), and the network was trained only on same-digit pairs (@sec-siam). It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.
 
 ```{=html}
 <!-- =====================================================================
@@ -1103,6 +1191,8 @@ ggplot(digit_cmp, aes(factor(digit), accuracy, colour = model)) +
 :::
 ::::
 
+The Siamese network was also evaluated by digit and session to examine which conditions made writer matching easier or harder.
+
 ```{r}
 #| label: fig-comp-siam-digit
 #| fig-cap: "Siamese matching AUC by digit."
@@ -1130,6 +1220,15 @@ ggplot(siam_digit, aes(factor(digit), auc, group = 1)) +
 ```
 
 ```{r}
+#| label: comp-siam-digit-vals
+#| include: false
+#| eval: !expr ready("outputs/siamese_auc_by_digit.csv")
+digit_auc_tbl <- read_csv("outputs/siamese_auc_by_digit.csv", show_col_types = FALSE)
+```
+
+@fig-comp-siam-digit shows that the network performs consistently well when both images represent the same digit. Across digits 0--4, ROC AUC ranges from `r sprintf("%.4f", min(digit_auc_tbl$auc))` for digit `r digit_auc_tbl$digit[which.min(digit_auc_tbl$auc)]` to `r sprintf("%.4f", max(digit_auc_tbl$auc))` for digit `r digit_auc_tbl$digit[which.max(digit_auc_tbl$auc)]`, while balanced accuracy ranges from `r pct(min(digit_auc_tbl$balanced_accuracy))` to `r pct(max(digit_auc_tbl$balanced_accuracy))`. The differences between digits are small, suggesting that writer-specific characteristics are identifiable across all five digits when the digit is held fixed.
+
+```{r}
 #| label: fig-comp-siam-session
 #| fig-cap: "Distances for same-writer pairs from the same session vs different sessions."
 #| eval: !expr ready("outputs/siamese_test_distances.csv")
@@ -1141,6 +1240,35 @@ siam_dist |> filter(same_writer, same_digit) |> mutate(session_type = if_else(sa
   geom_boxplot(width = 0.5, fill = "grey85", colour = "grey35", outlier.size = 0.6) +
   labs(x = NULL, y = "Euclidean embedding distance")
 ```
+
+```{r}
+#| label: comp-siam-session-vals
+#| include: false
+#| eval: !expr ready("outputs/siamese_session_effects.csv", "outputs/siamese_session_auc.csv")
+session_dist_tbl <- read_csv("outputs/siamese_session_effects.csv", show_col_types = FALSE)
+session_auc_tbl  <- read_csv("outputs/siamese_session_auc.csv", show_col_types = FALSE)
+
+same_mean  <- session_dist_tbl$Mean_Distance[session_dist_tbl$Condition == "Same session"]
+cross_mean <- session_dist_tbl$Mean_Distance[session_dist_tbl$Condition == "Different sessions" | session_dist_tbl$Condition == "Cross session"]
+```
+
+Session differences have a clearer effect than digit does. @fig-comp-siam-session shows that genuine pairs from the same session have a mean embedding distance of `r sprintf("%.3f", same_mean)`, compared with `r sprintf("%.3f", cross_mean)` for pairs from different sessions -- more than `r sprintf("%.1f", cross_mean / same_mean)` times as far apart in embedding space when the images come from different sessions. The network reaches `r sprintf("%.4f", session_auc_tbl$AUC[session_auc_tbl$Condition == "Same session"])` AUC and `r pct(session_auc_tbl$Balanced_Accuracy[session_auc_tbl$Condition == "Same session"])` balanced accuracy on same-session comparisons, compared with `r sprintf("%.4f", session_auc_tbl$AUC[session_auc_tbl$Condition == "Cross session"])` AUC and `r pct(session_auc_tbl$Balanced_Accuracy[session_auc_tbl$Condition == "Cross session"])` across sessions -- so although the network can still distinguish genuine from different-writer pairs reasonably well across thresholds (the AUC drop is small), it is far less reliable at a single fixed threshold when the writer's handwriting has changed between sessions.
+
+```{r}
+#| label: tbl-comp-siam-digit-comparison
+#| tbl-cap: "Siamese verification AUC by pair composition on the held-out test set."
+#| eval: !expr ready("outputs/siamese_test_distances.csv")
+tibble(
+  `Pair type` = c("Same-digit", "Cross-digit", "All pairs"),
+  `Number of pairs` = c(sum(siam_dist$same_digit), sum(!siam_dist$same_digit), nrow(siam_dist)),
+  `ROC AUC` = c(sprintf("%.3f", calc_auc(siam_dist$same_writer[siam_dist$same_digit],  siam_dist$distance[siam_dist$same_digit])),
+                sprintf("%.3f", calc_auc(siam_dist$same_writer[!siam_dist$same_digit], siam_dist$distance[!siam_dist$same_digit])),
+                sprintf("%.3f", calc_auc(siam_dist$same_writer, siam_dist$distance)))
+) %>%
+  knitr::kable()
+```
+
+@tbl-comp-siam-digit-comparison shows the same limitation as @sec-tune-siam when comparing different digits: same-digit AUC is far higher than cross-digit AUC. This is consistent with the network having been trained only on same-digit pairs (@sec-siam): it learned to compare handwriting styles when digit shape was held fixed, but transfers less effectively when the two images represent different digits. Together, these results show that the Siamese network learns useful writer-specific information, but matching becomes less reliable when handwriting changes across sessions or digit identities. Training on a wider variety of genuine pairs may help improve robustness.
 
 <!-- ---- Side by side · OWNER: Jesse (A) · ≈ 400 words ---- -->
 
@@ -1249,8 +1377,7 @@ The results show that writer-specific information can be learned from handwritte
 
 For writer identification, the three-layer CNN performed better than the two-layer model, achieving 56.6% test accuracy and 84.8% top-three accuracy. Increasing model depth improved performance, although the three-layer model also showed overfitting and overconfidence. Accuracy varied considerably between writers and sessions, meaning that the overall result hides cases where the model performs well and others where it struggles to identify the correct writer.
 
-<!-- TODO (not yet resolved): the Siamese test ROC AUC/balanced accuracy quoted below (0.851 / 74.6%) come from Siamese.R's task3_results, which is computed but never written to a CSV -- so these numbers can't currently be reproduced from anything in outputs/. Recomputing ROC AUC directly from outputs/siamese_test_distances.csv gives 0.844 (matching @tbl-comp-summary and the "All pairs" row of the digit/session comparison), not 0.851. Nicole: please re-run Siamese.R, add a write.csv() for task3_results, and update this paragraph (and @sec-siam, @sec-tune-siam, @sec-comp-siam) with whatever the re-run actually produces. -->
-The Siamese network achieved a test ROC AUC of 0.851 and balanced accuracy of 74.6% for same-writer verification. It also achieved 0.893 AUC in the separate unseen-writer experiment, suggesting that the learned similarity measure can transfer to new identities. However, matching became less reliable across sessions and particularly when the two images represented different digits. In the direct embedding comparison, the CNN achieved the highest matching AUC of `r sprintf("%.3f", get_val(comp_overall, "cnn", "auc"))`, compared with `r sprintf("%.3f", get_val(comp_overall, "siamese", "auc"))` for the Siamese network and `r sprintf("%.3f", get_val(comp_overall, "pca", "auc"))` for PCA. The CNN is therefore more effective for identifying known writers in this study, while the Siamese approach offers a way to verify writers without requiring them to be included in the original classification model.
+The Siamese network achieved a test ROC AUC of `r sprintf("%.3f", siam_auc)` and balanced accuracy of `r pct(siam_bal_acc)` for same-writer verification. It also achieved `r sprintf("%.3f", unseen$Test_AUC)` AUC in the separate unseen-writer experiment, suggesting that the learned similarity measure can transfer to new identities. However, matching became less reliable across sessions and particularly when the two images represented different digits. In the direct embedding comparison, the CNN achieved the highest matching AUC of `r sprintf("%.3f", get_val(comp_overall, "cnn", "auc"))`, compared with `r sprintf("%.3f", get_val(comp_overall, "siamese", "auc"))` for the Siamese network and `r sprintf("%.3f", get_val(comp_overall, "pca", "auc"))` for PCA. The CNN is therefore more effective for identifying known writers in this study, while the Siamese approach offers a way to verify writers without requiring them to be included in the original classification model.
 
 These findings are limited by the use of clean, simulated handwriting from only 20 writers and five digits. Future work could evaluate both models on real handwriting collected across more sessions and writing conditions, while including cross-digit pairs during Siamese training to improve generalisation. Overall, the study shows that both approaches can capture writer-specific characteristics, but their usefulness depends on the task and how well they handle changes in handwriting.
 
