@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB"><head>
 
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Maxine Senderayi (SNDMAX001)">
-<meta name="author" content="Jesse MacDonald (MCDJES006)">
-<meta name="author" content="Nicole Thomas (THMNIC036)">
-<meta name="dcterms.date" content="2026-10-02">
+<meta name="author" content="Maxine Senderayi">
+<meta name="author" content="Jesse MacDonald">
+<meta name="author" content="Nicole Thomas">
+<meta name="dcterms.date" content="2026-10-22">
 
-<title>Who wrote this digit? Writer identification with CNNs and Siamese networks – DS4I Assignment 2</title>
+<title>Who wrote this digit? Writer identification with CNNs and Siamese networks – STA5073Z Assignment 2</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -29,41 +29,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 /* CSS for citations */
 div.csl-bib-body { }
@@ -88,11 +53,8 @@ div.csl-indent {
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -102,20 +64,8 @@ div.csl-indent {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-ba8f7c244c1f50cbf6c6a3aa3874339a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-359b6ce6b83841630060971f7712478f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "sidebar",
-  "copy-button": false,
-  "collapse-after": 3,
-  "panel-placement": "start",
-  "type": "textbox",
-  "limit": 50,
-  "keyboard-shortcut": [
-    "f",
-    "/",
-    "s"
-  ],
-  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -132,18 +82,44 @@ div.csl-indent {
 }</script>
 
 
+<link rel="stylesheet" href="assets/fonts.css">
 </head>
 
-<body class="quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">STA5073Z Assignment 2</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/Maxinechiedza/ds4i_assignment2"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text">GitHub repository</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
+    <h2 id="toc-title">Contents</h2>
    
   <ul class="collapse">
   <li><a href="#sec-intro" id="toc-sec-intro" class="nav-link active" data-scroll-target="#sec-intro"><span class="header-section-number">1</span> Introduction</a></li>
@@ -167,392 +143,486 @@ div.csl-indent {
   
   
   </ul>
-</nav>
+<div class="toc-actions"><ul class="collapse"><li><a href="https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Who wrote this digit? Writer identification with CNNs and Siamese networks</h1>
-<p class="subtitle lead">STA5073Z Data Science for Industry 2026 · Assignment 2</p>
+<header id="title-block-header" class="quarto-title-block report-title">
+<p class="report-institution">University of Cape Town</p>
+<p class="report-department">Department of Statistical Sciences</p>
+<p class="report-course">STA5073Z: Data Science for Industry · Assignment 2</p>
+
+<hr class="report-rule">
+<h1 class="title display-7">Who wrote this digit? Writer identification with CNNs and Siamese networks</h1>
+<hr class="report-rule">
+
+<div class="report-authors">
+  <div class="report-author">
+    <span class="report-author-name">Maxine Senderayi</span>
+        <span class="report-author-id">SNDMAX001</span>
+      </div>
+  <div class="report-author">
+    <span class="report-author-name">Jesse MacDonald</span>
+        <span class="report-author-id">MCDJES006</span>
+      </div>
+  <div class="report-author">
+    <span class="report-author-name">Nicole Thomas</span>
+        <span class="report-author-id">THMNIC036</span>
+      </div>
 </div>
 
-
-
-<div class="quarto-title-meta">
-
-    <div>
-    <div class="quarto-title-meta-heading">Authors</div>
-    <div class="quarto-title-meta-contents">
-             <p>Maxine Senderayi (SNDMAX001) </p>
-             <p>Jesse MacDonald (MCDJES006) </p>
-             <p>Nicole Thomas (THMNIC036) </p>
-          </div>
-  </div>
-    
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">October 2, 2026</p>
-    </div>
-  </div>
-  
-    
-  </div>
-  
-
+<p class="report-date date">22 October 2026</p>
 
 </header>
 
 
-<div class="callout callout-style-default callout-warning callout-titled" title="How to use this file (hidden when show-guidance: false)">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>How to use this file (hidden when show-guidance: false)
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Colour = owner.</strong> Green = Jesse (Role A, data, splits and comparison) · Blue = Maxine (Role B, CNN) · Red = Nicole (Role C, Siamese network) · Orange = not assigned yet (decide after Tasks 1–6).</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Report section</th>
-<th>Task</th>
-<th>Owner</th>
-<th>Words</th>
-<th>Reads</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Introduction</td>
-<td>8</td>
-<td>Not assigned yet</td>
-<td>≈ 400</td>
-<td>–</td>
-</tr>
-<tr class="even">
-<td>Data and exploration</td>
-<td>1</td>
-<td>Jesse (A)</td>
-<td>≈ 550</td>
-<td><code>data/handwriting.rds</code></td>
-</tr>
-<tr class="odd">
-<td>Evaluation design</td>
-<td>4</td>
-<td>Jesse (A)</td>
-<td>≈ 550</td>
-<td><code>data/splits.csv</code></td>
-</tr>
-<tr class="even">
-<td>Writer identification with a CNN</td>
-<td>2</td>
-<td>Maxine (B)</td>
-<td>≈ 650</td>
-<td><code>outputs/cnn_test_predictions.csv</code>, <code>outputs/cnn_history.csv</code></td>
-</tr>
-<tr class="odd">
-<td>Same-writer matching with a Siamese network</td>
-<td>3</td>
-<td>Nicole (C)</td>
-<td>≈ 650</td>
-<td><code>outputs/siamese_test_distances.csv</code>, <code>outputs/siamese_history.csv</code></td>
-</tr>
-<tr class="even">
-<td>Hyperparameter sensitivity: CNN</td>
-<td>5</td>
-<td>Maxine (B)</td>
-<td>≈ 300</td>
-<td><code>outputs/tuning_cnn.csv</code></td>
-</tr>
-<tr class="odd">
-<td>Hyperparameter sensitivity: Siamese</td>
-<td>5</td>
-<td>Nicole (C)</td>
-<td>≈ 300</td>
-<td><code>outputs/tuning_siamese.csv</code></td>
-</tr>
-<tr class="even">
-<td>CNN vs Siamese: CNN results by digit and session</td>
-<td>6</td>
-<td>Maxine (B)</td>
-<td>≈ 300</td>
-<td>Maxine’s own outputs</td>
-</tr>
-<tr class="odd">
-<td>CNN vs Siamese: Siamese results by digit and session</td>
-<td>6</td>
-<td>Nicole (C)</td>
-<td>≈ 300</td>
-<td>Nicole’s own outputs</td>
-</tr>
-<tr class="even">
-<td>CNN vs Siamese: side by side</td>
-<td>6</td>
-<td>Jesse (A)</td>
-<td>≈ 400</td>
-<td><code>outputs/comparison.csv</code></td>
-</tr>
-<tr class="odd">
-<td>Conclusion</td>
-<td>8</td>
-<td>Not assigned yet</td>
-<td>≈ 300</td>
-<td>–</td>
-</tr>
-<tr class="even">
-<td><strong>Total</strong></td>
-<td></td>
-<td></td>
-<td><strong>≈ 4,700</strong></td>
-<td>Limit 5,000 (excludes AI use statement, appendices, captions, references)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>House rules</strong></p>
-<ul>
-<li>Edit only your own sections. To change someone else’s, tell them or open a pull request.</li>
-<li>Write in your own words. The brief allows AI for proofreading only, not first drafts.</li>
-<li>Model training lives in scripts (<code>R/</code> or <code>python/</code>) that write to <code>outputs/</code>. The report only reads those files, so it renders in seconds. Commit the scripts too: that is what makes it reproducible.</li>
-<li>Label figures and tables with your section key: <code>eda</code>, <code>split</code>, <code>cnn</code>, <code>siam</code>, <code>tune</code>, <code>comp</code> (e.g.&nbsp;<code>fig-cnn-digit</code>, <code>tbl-siam-metrics</code>). Cross-reference with <code>@fig-cnn-digit</code> and <code>@sec-cnn</code>.</li>
-<li>Numbers in the text come from inline <code>r</code> code reading the output files, never typed by hand. They then stay correct when a model is re-run.</li>
-<li>Guard every chunk that needs a file with <code>#| eval: !expr ready("path")</code>.</li>
-<li>Keep a note of your AI use per task as you go. It goes in the appendix table at the end.</li>
-</ul>
-</div>
-</div>
 <!-- =====================================================================
      INTRODUCTION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 400 words
      ===================================================================== -->
 <section id="sec-intro" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
-<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet · Task 8 · ≈ 400 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Owner: not assigned yet · Task 8 · ≈ 400 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Must cover:</strong> the two questions (which of 20 known writers wrote this image, and did the same person write these two images?) · the data in one paragraph (20 writers × 5 digits × 5 sessions × 50 replicates, simulated) · why writer identification matters in practice · a one-line roadmap of the report.</p>
-</div>
-</div>
 <!-- =====================================================================
      DATA AND EXPLORATION  ·  Task 1  ·  OWNER: Jesse (A)  ·  ≈ 550 words
      ===================================================================== -->
 </section>
 <section id="sec-eda" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> Data and exploration</h1>
-<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Jesse (Role A) · Task 1 · ≈ 550 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<p>The data is 25,000 simulated images: 20 writers x 5 digits x 5 sessions x 50 replicates, each a 28x28 greyscale digit. <a href="#fig-eda-grid" class="quarto-xref">Figure&nbsp;1</a> lines up one writer per row and one digit per column: digit shape dominates what the eye sees, but within a row each writer keeps a visibly consistent stroke width and slant across all five digits – the thing we are hoping a model can key on. <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> follows one writer’s digit across the five sessions: the stroke becomes visibly heavier and more angular from session 1 to session 5, a gradual drift rather than a jump, and the same drift direction holds for every replicate shown within a session. Replicates <em>within</em> one session, by contrast, look close to identical – the main source of within-session variation is small pixel-level noise, not a different way of writing the digit.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-eda-grid" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eda-grid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-eda-grid-1.png" class="img-fluid figure-img" width="672">
 </div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Owner: Jesse (Role A) · Task 1 · ≈ 550 words
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-grid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: One image per writer (rows) and digit (columns), session 1, replicate 1.
+</figcaption>
+</figure>
 </div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> examples across people, digits and sessions · the visible sources of variation · the limitations of this simulated data.</p>
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>What differs between writers? Between sessions of the same writer? Between replicates within one session?</li>
-<li>Which simple features vary most (ink amount, width and height, centre of mass, slant)? Do they vary more by writer or by session?</li>
-<li>How much variance sits between writers, between sessions and within a session (variance decomposition)?</li>
-<li>Do writers separate in a PCA of the raw pixels? Do sessions?</li>
-<li>What makes this data easier or less realistic than real handwriting (simulated, digits 0–4 only, 20 writers, perfectly balanced, clean and centred images)?</li>
-</ul>
-<p><strong>Exhibits (labels to use):</strong> <code>fig-eda-grid</code> writers × digits · <code>fig-eda-sessions</code> one writer and digit across sessions 1–5 · <code>fig-eda-means</code> mean and difference images · <code>fig-eda-features</code> feature boxplots · <code>tbl-eda-variance</code> variance decomposition · <code>fig-eda-pca</code> PCA coloured by writer and session.</p>
-<p><strong>Reads:</strong> <code>data/handwriting.rds</code>. EDA is fast enough to run inside this file.</p>
 </div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: grid of example images across writers and digits</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-eda-sessions" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eda-sessions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-eda-sessions-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-sessions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Writer 1’s digit 0, four replicates (rows) across sessions 1–5 (columns). Later sessions show a visibly heavier, more angular stroke.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The session drift in <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> is a whole-writer effect, not specific to one digit or replicate. <a href="#fig-eda-means" class="quarto-xref">Figure&nbsp;3</a> makes the same point a different way: the top row is each writer’s own average digit-0 image (writers are visibly distinct once you average out replicate noise), and the bottom block subtracts each of four writers’ own overall mean from their session means. The resulting blue/red difference images drift in a consistent direction session by session for a given writer, but that direction differs from writer to writer – session is a shared <em>kind</em> of variation (everyone’s stroke changes a little over time) but not a shared <em>direction</em>, which is why a model trained on sessions 1-3 still has to generalise to session 5 rather than just learning “session 5 looks like X”.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-eda-means" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eda-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-eda-means-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-means-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Top: mean digit-0 image per writer. Bottom: four writers’ session means minus their own overall mean (blue = less ink, red = more ink than that writer’s average), showing how each writer’s stroke shifts across sessions.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Eyeballing images only goes so far, so <a href="#fig-eda-features" class="quarto-xref">Figure&nbsp;4</a> boxplots five simple numeric features (ink amount, bounding-box width and height, how far the centre of mass sits from the image centre, and a slant estimate) against writer, session and digit in turn. Ink, width, height and slant all separate clearly by writer – each writer occupies a fairly narrow, writer-specific band on these features – while none of the five show a visible shift by session, at least at this coarse, whole-distribution level (the session drift in <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> and <a href="#fig-eda-means" class="quarto-xref">Figure&nbsp;3</a> is real but evidently too subtle to show up as a shift in these five summary numbers; a model looking at raw pixels can still pick it up). Digit mostly moves ink, width and height, which is just digit shape (a 1 uses less ink than a 0), not writer style.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-eda-features" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eda-features-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-eda-features-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-features-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Five simple image features, boxplotted by writer, session and digit. Ink, width, height and slant separate clearly by writer; none separate visibly by session; digit mostly affects ink, width and height (shape), as expected.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: same writer and digit across the five sessions, a few replicates each</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: mean and difference images</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: ink amount, width/height, centre of mass, slant</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
 <div id="tbl-eda-variance" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Share of feature variance between writers, between sessions and within sessions.
+Table&nbsp;1: Share of feature variance (after removing each feature’s digit mean) between writers, between sessions within a writer, and within a session.
 </figcaption>
 <div aria-describedby="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: variance decomposition of the features above</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Feature</th>
+<th style="text-align: right;">Between writer %</th>
+<th style="text-align: right;">Between session %</th>
+<th style="text-align: right;">Within session %</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ink</td>
+<td style="text-align: right;">79.1</td>
+<td style="text-align: right;">7.6</td>
+<td style="text-align: right;">13.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">width</td>
+<td style="text-align: right;">71.7</td>
+<td style="text-align: right;">12.8</td>
+<td style="text-align: right;">15.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">height</td>
+<td style="text-align: right;">68.1</td>
+<td style="text-align: right;">3.3</td>
+<td style="text-align: right;">28.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">centroid_shift</td>
+<td style="text-align: right;">8.5</td>
+<td style="text-align: right;">13.8</td>
+<td style="text-align: right;">77.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">slant</td>
+<td style="text-align: right;">87.9</td>
+<td style="text-align: right;">10.0</td>
+<td style="text-align: right;">2.1</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: PCA of pixels</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
+<p><a href="#tbl-eda-variance" class="quarto-xref">Table&nbsp;1</a> puts a number on that impression with a variance decomposition (each feature is first centred on its own digit mean, so digit shape doesn’t swamp the writer/session split). Slant is the most writer-specific feature, at 87.9% of its variance sitting between writers and only 2.1% left as within-session noise; ink and width are similar, with 79.1% and 71.7% between writers respectively. Centroid shift is the exception: only 8.5% of its variance is between writers, with the rest (77.7%) within a single session – these images are already centred during generation, so where the centre of mass lands is mostly replicate noise rather than a writer trait. Across every feature, the between-session share stays small (at most 13.8%), confirming that the session effect visible in <a href="#fig-eda-sessions" class="quarto-xref">Figure&nbsp;2</a> is real but subtle next to the writer effect – good news for a model trying to recognise a writer on a new day.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-eda-pca" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-eda-pca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-eda-pca-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-pca-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: PCA of raw pixels. Top: a 5,000-image sample across all digits — clusters correspond to digit shape, not writer, and writers don’t visibly separate once digit is mixed in. Bottom: restricting to digit 0 only (removing the digit-shape confound) reveals tight, clearly separated per-writer clusters, which are not further split by session — writer style is a strong pixel-level signal once digit is held fixed.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-eda-pca" class="quarto-xref">Figure&nbsp;5</a> shows what the writer signal costs you when digit isn’t held fixed. With all five digits mixed together (top row), the first two principal components explain only 7.5% and 6.8% of pixel variance and visibly separate by digit, not writer – digit shape is simply the biggest source of pixel-level variation, and it swamps the writer signal in a plain PCA. Restricting to digit 0 only (bottom row) removes that confound: PC1 and PC2 now explain more variance (12.1% and 9.3%) and writers form tight, clearly separated clusters, which are <em>not</em> further split by session – so once digit is held fixed, writer style is a strong linear signal even in raw pixels, and the CNN and Siamese network (which both condition on a single digit at a time) should have an easier time than this unconditional PCA suggests.</p>
+<p>This is simulated data, and that matters for how far these conclusions travel. The images are clean, centred and noise-free in a way real handwriting scans rarely are; there are only 20 writers and 5 digits (0-4, not the full 0-9), each perfectly balanced with 50 replicates per writer/digit/session; and “session” here is a single simulated drift process rather than genuinely different pens, moods or paper found in real handwriting collected over time. The patterns above – a dominant, stable writer signal and a small, gradual session effect – are the patterns this particular simulator was built to produce, so they should be read as “this method can find writer-specific signal when it is there and well-behaved,” not as evidence of how well it would do on messier, real handwriting.</p>
 <!-- =====================================================================
      EVALUATION DESIGN  ·  Task 4  ·  OWNER: Jesse (A)  ·  ≈ 550 words
      ===================================================================== -->
 </section>
 <section id="sec-split" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Evaluation design</h1>
-<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Jesse (Role A) · Task 4 · ≈ 550 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Owner: Jesse (Role A) · Task 4 · ≈ 550 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> the chosen train, validation and test strategy and why · what kind of generalisation the evaluation represents · possible leakage or optimistic performance.</p>
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>Main split (both models): sessions 1–3 train, 4 validation, 5 test. What does it test? (A known writer on a new day.)</li>
-<li>Unseen-writer split (Siamese only): 14 / 3 / 3 writers. What does it test? (A person the model has never seen.) Why can the CNN not do this?</li>
-<li>What is validation used for (early stopping, tuning, the Siamese threshold)? Why is test touched only once?</li>
-<li>Optimism experiment: how much better does a simple baseline look on a random image split than on the session-held-out split?</li>
-<li>Leakage risks: near-duplicate replicates within a session, pairs built before splitting, a threshold tuned on test, the same image in training and test pairs.</li>
-<li>Why might results still be optimistic even with a clean split (simulated data, 20 writers)?</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>tbl-split-counts</code> images per split · <code>tbl-split-optimism</code> (or <code>fig-split-optimism</code>) baseline accuracy on the two splits.</p>
-<p><strong>Reads:</strong> <code>data/splits.csv</code>. <strong>Code:</strong> <code>R/00_data.R</code> writes the split; <code>R/optimism_baseline.R</code> runs the experiment.</p>
-</div>
-</div>
+<p>Both models share one main split, <code>split_main</code>, built by session rather than by image: sessions 1-3 are train, session 4 is validation, and session 5 is held out entirely for test (<a href="#tbl-split-counts" class="quarto-xref">Table&nbsp;2</a>). Splitting by session rather than randomly means every test image comes from a session the model never trained on, for a writer it <em>has</em> seen – the evaluation this represents is “can you recognise a known writer’s handwriting on a new day”, which is the realistic use case (a person enrols once, then is checked against later samples) and the harder, more honest version of the writer-identification question. The CNN uses only <code>split_main</code>: it is a fixed 20-class classifier, so there’s no meaningful way to test it on a writer it never trained on – the output layer itself only has units for the 20 training writers. The Siamese network additionally uses <code>split_writer</code>, which instead holds out whole writers (14 train / 3 val / 3 test), because its job – deciding whether two images match – doesn’t require having seen either writer during training; this split tests the harder, more general question of whether the learned notion of “same writer” transfers to people the model has never encountered.</p>
+<div class="cell">
 <div id="tbl-split-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Number of images in each split.
+Table&nbsp;2: Number of images in each split. split_main is the session-based split used by both models (sessions 1-3/4/5 = train/val/test); split_writer is the writer-held-out split (14/3/3 writers = train/val/test), used only for the Siamese network’s unseen-writer experiment.
 </figcaption>
 <div aria-describedby="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>splits <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/splits.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: counts by split_main and split_writer</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">strategy</th>
+<th style="text-align: right;">test</th>
+<th style="text-align: right;">train</th>
+<th style="text-align: right;">val</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">split_main (session-based)</td>
+<td style="text-align: right;">5000</td>
+<td style="text-align: right;">15000</td>
+<td style="text-align: right;">5000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">split_writer (writer-based)</td>
+<td style="text-align: right;">3750</td>
+<td style="text-align: right;">17500</td>
+<td style="text-align: right;">3750</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
+</div>
+<p>Validation (session 4) is where every tunable choice gets made: early stopping for both models, the hyperparameter search in <a href="#sec-tune" class="quarto-xref">Section&nbsp;6</a>, and the Siamese network’s same/different distance threshold. Test (session 5) is touched exactly once, after all of that is fixed, so the reported test numbers are an honest estimate of performance on genuinely new data rather than a number that has itself been optimised.</p>
+<p>Splitting by session guards against one obvious leak – near-duplicate replicates of the same writer, digit and session landing on both sides of the split – but it’s worth asking how much that guard is actually worth. <a href="#tbl-split-optimism" class="quarto-xref">Table&nbsp;3</a> runs a simple baseline (a k-nearest-neighbour classifier on five basic image features: ink, width, height, centroid shift and slant) twice: once on a random image split of the same size, which lets replicates leak freely across train and test, and once on the proper session-held-out split.</p>
+<div class="cell">
 <div id="tbl-split-optimism" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-held-out split.
+Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-held-out split. The baseline is a k-NN classifier (k = 15) on five simple per-image features, standardised on the training features of each split.
 </figcaption>
 <div aria-describedby="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: read outputs/optimism_baseline.csv and show the gap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 67%">
+<col style="width: 8%">
+<col style="width: 7%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Split</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: right;">Train n</th>
+<th style="text-align: right;">Test n</th>
+<th style="text-align: left;">Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Random</td>
+<td style="text-align: left;">Random image split (ignores session; replicate leakage possible)</td>
+<td style="text-align: right;">15000</td>
+<td style="text-align: right;">5000</td>
+<td style="text-align: left;">93.0%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Session</td>
+<td style="text-align: left;">Session-held-out split (sessions 1-3 train, session 5 test)</td>
+<td style="text-align: right;">15000</td>
+<td style="text-align: right;">5000</td>
+<td style="text-align: left;">45.9%</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
+</div>
+<p>The gap is large: the same baseline reaches 93.0% accuracy on the random split but only 45.9% on the session split – a 47.1% drop from nothing but the split strategy, with the model, features and train/test sizes held fixed. That gap is the optimism a random split would have bought this baseline: with random assignment, a near-identical replicate of the test writer’s handwriting (same writer, same digit, often the same session) is likely sitting in the training set, so the “test” accuracy mostly measures memorisation of a very similar example rather than generalisation to new handwriting.</p>
+<p>Three leakage risks matter for both models even with the session split in place. First, test pairs and splits must be built in the right order: <code>data/test_pairs.csv</code> is built from <code>data/splits.csv</code> (<a href="#sec-split" class="quarto-xref">Section&nbsp;3</a>, <code>R/00_data.R</code>), not the reverse, so no pair can straddle train and test. Second, the Siamese threshold is chosen on validation pairs only (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>) and never touched again once test pairs are scored, so it can’t be quietly fitted to the test set. Third, the same image never appears in more than one pair-role that would let information leak between train and test test pairs, since pairs are drawn after the split and only from the appropriate session(s). Even so, results may still read as somewhat optimistic: with only 20 writers the models are solving a much easier closed-set problem than real-world identification among thousands of candidates, and the data is simulated, so the writer and session effects are exactly the effects the simulator was built to produce (<a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a>) – a real-world, cross-scanner, cross-pen deployment would likely see a larger session-style gap than the one measured here.</p>
 <!-- =====================================================================
      CNN  ·  Task 2  ·  OWNER: Maxine (Role B)  ·  ≈ 650 words
      ===================================================================== -->
 </section>
 <section id="sec-cnn" class="level1" data-number="4">
 <h1 data-number="4"><span class="header-section-number">4</span> Writer identification with a CNN</h1>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Maxine (Role B) · Task 2 · ≈ 650 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Maxine (Role B) · Task 2 · ≈ 650 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a prediction task whose response is writer ID · a CNN, built and evaluated · overall writer identification performance · performance compared by digit · what the evaluation measures mean in real-world terms.</p>
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>What exactly is predicted? (Input: one 28 × 28 image. Output: one of 20 known writers, a closed set.) Point to <a href="#sec-split" class="quarto-xref">Section&nbsp;3</a> for the split rather than repeating it.</li>
-<li>Architecture and training: layers, embedding size, optimiser, learning rate, batch size, epochs, early stopping rule.</li>
-<li>Overall test results: accuracy, top-3 accuracy, macro-F1. Which writers get confused with each other?</li>
-<li>Accuracy by digit, with 95% intervals (1,000 test images per digit).</li>
-<li>What do the numbers mean in practice? The chance of naming the right writer for a sample written on a new day; top-3 as a shortlist for a human examiner; the model always names one of the 20, even for an unknown writer.</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>tbl-cnn-arch</code> layers · <code>fig-cnn-training</code> loss and accuracy curves · <code>tbl-cnn-metrics</code> overall metrics · <code>fig-cnn-confusion</code> confusion matrix · <code>fig-cnn-digit</code> accuracy by digit.</p>
-<p><strong>Reads:</strong> <code>outputs/cnn_test_predictions.csv</code>, <code>outputs/cnn_history.csv</code>. <strong>Code:</strong> <code>R/cnn.R</code>.</p>
-</div>
-</div>
+<p>Two convolutional neural networks (CNNs), with two and three layers, were built to predict writer identity. <a href="#tbl-cnn-arch" class="quarto-xref">Table&nbsp;4</a> summarises their architectures and parameter counts. The three-layer model adds a 2 x 2 max-pooling layer and a convolutional layer with 64 filters. Both models use a 20-unit softmax output to estimate probabilities for the 20 writers. The three-layer CNN also serves as the Siamese network’s shared backbone.</p>
+<div class="cell">
 <div id="tbl-cnn-arch" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cnn-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: CNN architecture.
+Table&nbsp;4: Layers of the final CNNs. The 3-layer model (26 036 parameters) is the backbone shared with the Siamese network; the 2-layer model stops after the second convolution (6 516 parameters). Both use learning rate 0.001, batch size 64, categorical cross-entropy, and early stopping on validation accuracy (patience 10, at most 150 epochs).
 </figcaption>
 <div aria-describedby="tbl-cnn-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: layer table (can be typed by hand or taken from summary(model))</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 18%">
+<col style="width: 24%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Layer</th>
+<th style="text-align: left;">Output shape</th>
+<th style="text-align: right;">Parameters</th>
+<th style="text-align: left;">In 2-layer model</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Input: one 28 × 28 image</td>
+<td style="text-align: left;">28 × 28 × 1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Convolution, 16 filters 3 × 3, ReLU</td>
+<td style="text-align: left;">26 × 26 × 16</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Max pooling 2 × 2</td>
+<td style="text-align: left;">13 × 13 × 16</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Convolution, 32 filters 3 × 3, ReLU</td>
+<td style="text-align: left;">11 × 11 × 32</td>
+<td style="text-align: right;">4 640</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Max pooling 2 × 2</td>
+<td style="text-align: left;">5 × 5 × 32</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Convolution, 64 filters 3 × 3, ReLU</td>
+<td style="text-align: left;">3 × 3 × 64</td>
+<td style="text-align: right;">18 496</td>
+<td style="text-align: left;">no</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Global average pooling</td>
+<td style="text-align: left;">64 (2-layer: 32)</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dense embedding, 32 units, ReLU</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: right;">2 080 (2-layer: 1 056)</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Dropout 0.3 (training only)</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">yes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dense, 20 units, softmax</td>
+<td style="text-align: left;">20</td>
+<td style="text-align: right;">660</td>
+<td style="text-align: left;">yes</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: training curves</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
+<p>Both CNNs were trained on sessions 1–3 and validated on session 4. The grey dashed lines in <a href="#fig-cnn-training" class="quarto-xref">Figure&nbsp;6</a> mark the epochs with the best validation accuracy; orange and blue lines show training and validation, respectively. The three-layer model reaches 92% training accuracy at epoch 13, suggesting it memorises the training sessions, while validation accuracy remains near 59.5%. Its validation loss is lowest at epoch 3, then rises to 2.51 by epoch 13, indicating overfitting and overconfidence. The two-layer model appears to underfit: training accuracy reaches 60% only at epoch 60, while validation accuracy rises steadily. Its validation loss follows a similar but slower pattern, reaching a minimum of 1.69 at epoch 45 before increasing to 1.82 at the selected epoch, 60.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-cnn-training" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cnn-training-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-cnn-training-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cnn-training-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Training (sessions 1–3) and validation (session 4) curves of the two final CNNs. The dashed line marks the epoch with the best validation accuracy, whose weights were kept.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Test accuracy is the proportion of images for which the highest-probability writer is correct; top-3 accuracy is the proportion for which the true writer appears among the three highest-probability predictions. The latter measures whether the model provides a useful shortlist. Random guessing yields 5% accuracy and 15% top-3 accuracy. In <a href="#tbl-cnn-metrics" class="quarto-xref">Table&nbsp;5</a>, the three-layer model achieves 56.6% test accuracy and 84.8% top-3 accuracy, exceeding the two-layer model’s 48.5% and 79.5%. Test accuracy is 2–3 percentage points below validation accuracy for both models. Despite its higher accuracy, the three-layer model has a higher test loss (2.22), because cross-entropy penalises its overconfident incorrect predictions.</p>
+<div class="cell">
 <div id="tbl-cnn-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cnn-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;5: CNN writer identification on the session-5 test set.
+Table&nbsp;5: Writer identification on the 5 000 session-5 test images (250 per writer). Guessing would give 5% accuracy and 15% top-3 accuracy. Validation accuracy is on session 4 at the kept epoch.
 </figcaption>
 <div aria-describedby="tbl-cnn-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>cnn_pred <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/cnn_test_predictions.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: accuracy, top-3 accuracy, macro-F1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 35%">
+<col style="width: 19%">
+<col style="width: 12%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: left;">Test accuracy (95% CI)</th>
+<th style="text-align: left;">Top-3 accuracy</th>
+<th style="text-align: left;">Macro-F1</th>
+<th style="text-align: left;">Test loss</th>
+<th style="text-align: left;">Validation accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">3 conv layers (best CNN, shared backbone)</td>
+<td style="text-align: left;">56.6% (55.2%–58.0%)</td>
+<td style="text-align: left;">84.8%</td>
+<td style="text-align: left;">0.545</td>
+<td style="text-align: left;">2.22</td>
+<td style="text-align: left;">59.5%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2 conv layers (original encoder)</td>
+<td style="text-align: left;">48.5% (47.1%–49.9%)</td>
+<td style="text-align: left;">79.5%</td>
+<td style="text-align: left;">0.465</td>
+<td style="text-align: left;">1.72</td>
+<td style="text-align: left;">51.0%</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: confusion matrix heatmap</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
+<p><a href="#fig-cnn-digit" class="quarto-xref">Figure&nbsp;7</a> compares accuracy by digit, with 1 000 test images per digit and an approximate 95% interval of +/-3 percentage points. Digit 2 is the weakest for both models, suggesting it carries the least writer-identifying information in session 5 test data. Digit 0 is the three-layer model’s strongest digit (63.3%) but the two-layer model’s weakest (39.7%). Conversely, digit 4 is the two-layer model’s strongest (60.8%), while the three-layer model achieves 56.6%. Thus, which digit appears most informative depends partly on the model.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: accuracy by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-cnn-digit" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cnn-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-cnn-digit-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cnn-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Test accuracy by digit, with 95% intervals (1 000 test images per digit).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-cnn-confusion" class="quarto-xref">Figure&nbsp;8</a> compares predictions by writer; each writer contributes 250 test images. Darker diagonal cells indicate more correct predictions. Writers 9 and 18 are identified with 100% accuracy, while writers 6, 11, 12, 14, 17 and 19 achieve 76–84%. However, writers 9, 14 and 6 are predicted 443, 392 and 378 times, respectively, well above the expected 250. Writer 10 has 27% accuracy but 99.6% top-3 accuracy: it is often confused with writer 2, to which the model assigns 179 of writer 10’s test images to writer 2. Writer 15 is also confused with writer 14; writers 8 and 13 are confused with each other and writer 5. Writer 5 has 0% accuracy and is instead classified as writers 15, 13, 19 or 14. One possible explanation is that writer 5’s handwriting has shifted across sessions.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-cnn-confusion" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cnn-confusion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-cnn-confusion-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cnn-confusion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Confusion matrix of the 3-layer CNN on the test set. Each row is one true writer’s 250 images; shading shows the share assigned to each predicted writer, so a perfect model would only shade the diagonal.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#fig-cnn-writer" class="quarto-xref">Figure&nbsp;9</a> shows that writer-level test accuracy ranges from 0% for writer 5 to 100% for writers 9 and 18. The gap between test and top-3 accuracy distinguishes near misses, where the true writer ranks second or third, from far misses, where the true writer is absent from the top three. Writer 10’s confusion with writer 2 illustrates a near miss; writer 5, with only 4% top-3 accuracy, represents an extreme far-miss case. Overconfidence also contributes: for 35% of the three-layer model’s incorrect predictions, the true writer receives less than 1% probability. Overall, the 56.6% test accuracy conceals substantial variation in performance across writers. These differences show why aggregate accuracy alone does not fully describe model performance.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-cnn-writer" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cnn-writer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-cnn-writer-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cnn-writer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: 3-layer CNN: test accuracy and top-3 accuracy for each writer, sorted by accuracy.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <!-- =====================================================================
      SIAMESE NETWORK  ·  Task 3  ·  OWNER: Nicole (Role C)  ·  ≈ 650 words
@@ -560,49 +630,47 @@ Table&nbsp;5: CNN writer identification on the session-5 test set.
 </section>
 <section id="sec-siam" class="level1" data-number="5">
 <h1 data-number="5"><span class="header-section-number">5</span> Same-writer matching with a Siamese network</h1>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 3 · ≈ 650 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-siam-pairs" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-siam-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-siam-pairs-1.png" class="img-fluid figure-img" width="672">
 </div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 3 · ≈ 650 words
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-siam-pairs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Example positive (same writer) and negative (different writer) training pairs.
+</figcaption>
+</figure>
 </div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a Siamese network that estimates whether two images come from the same writer · contrastive or triplet loss · how training examples are constructed · how matching performance is evaluated.</p>
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>Architecture: shared encoder (same backbone as the CNN), embedding size, distance.</li>
-<li>Loss: contrastive or triplet, the margin, and why.</li>
-<li>Training examples: how positive and negative pairs are sampled, why digit is held fixed, the same/different balance, cross-session positives, and pairs built only after splitting.</li>
-<li>Threshold: chosen on validation pairs by balanced accuracy.</li>
-<li>Test results on <code>data/test_pairs.csv</code>: ROC AUC, equal error rate, balanced accuracy, and distance histograms for same vs different pairs.</li>
-<li>Unseen-writer experiment: the same metrics on the 3 held-out writers.</li>
-<li>What the errors mean: a false accept matches two different writers; a false reject misses a true match. Which matters more depends on the use.</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>fig-siam-pairs</code> example positive and negative pairs · <code>fig-siam-dist</code> distance histograms · <code>fig-siam-roc</code> ROC curves · <code>tbl-siam-metrics</code> main split vs unseen writers.</p>
-<p><strong>Reads:</strong> <code>outputs/siamese_test_distances.csv</code>, <code>outputs/siamese_history.csv</code>. <strong>Code:</strong> <code>R/siamese.R</code> (or <code>python/siamese.py</code>).</p>
 </div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: a few pairs of each kind</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-siam-dist" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-siam-dist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-siam-dist-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-siam-dist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: Embedding distances for same-writer and different-writer test pairs.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>siam_dist <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/siamese_test_distances.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: histograms, with the validation threshold marked</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-siam-roc" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-siam-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-siam-roc-1.png" class="img-fluid figure-img" width="672">
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: ROC curve(s)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-siam-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: ROC curves for same-writer matching.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <div id="tbl-siam-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -610,10 +678,9 @@ Table&nbsp;5: CNN writer identification on the session-5 test set.
 Table&nbsp;6: Siamese matching performance: known writers on a new session vs unseen writers.
 </figcaption>
 <div aria-describedby="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: AUC, EER, balanced accuracy for both settings</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div>
+
+</div>
 </div>
 </figure>
 </div>
@@ -623,80 +690,225 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 </section>
 <section id="sec-tune" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> Hyperparameter sensitivity</h1>
-<div class="callout callout-style-default callout-warning callout-titled" title="Shared section · Task 5">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Shared section · Task 5
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a limited hyperparameter search for at least one model (we do both) · how sensitive the evaluation measures are to the hyperparameters varied. Maxine writes the CNN part and Nicole the Siamese part. Use the same plot style so the two figures read alike.</p>
-</div>
-</div>
 <!-- ---- CNN tuning · OWNER: Maxine (Role B) · ≈ 300 words ---- -->
 <section id="sec-tune-cnn" class="level2" data-number="6.1">
 <h2 data-number="6.1" class="anchored" data-anchor-id="sec-tune-cnn"><span class="header-section-number">6.1</span> CNN</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Maxine (Role B) · Task 5 · ≈ 300 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Maxine (Role B) · Task 5 · ≈ 300 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>Which 2–3 hyperparameters were varied, over which values, and why those?</li>
-<li>Design: grid or random search, number of configurations, seeds per configuration. Chosen on validation only.</li>
-<li>How much does validation accuracy move across each hyperparameter, compared with seed-to-seed noise?</li>
-<li>The chosen configuration and its single test result.</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>fig-tune-cnn</code>. <strong>Reads:</strong> <code>outputs/tuning_cnn.csv</code>. <strong>Code:</strong> <code>R/tune_cnn.R</code>.</p>
-</div>
-</div>
+<p>The CNN hyperparameter search varied dropout (0, 0.3, 0.5), depth (one to three convolutional layers) and learning rate (0.0003, 0.001, 0.003), one setting at a time. Interactions were not tested; runs used three seeds, one validation session, loss-based stopping (patience 5) and a 50-epoch cap. In <a href="#fig-tune-cnn" class="quarto-xref">Figure&nbsp;13</a>, three layers with dropout 0.3 and learning rate 0.001 performed best, averaging 49.9% validation accuracy. Depth had the clearest effect. Dropout results (45%, 42%, 43%) were within seed variation, while learning rate 0.003 was less stable (spread 0.052 versus about 0.025). These findings should be interpreted cautiously given the limited search design.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>tune_cnn <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_cnn.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: sensitivity plot</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-tune-cnn" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-tune-cnn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-tune-cnn-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tune-cnn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13: CNN validation accuracy (session 4) when one hyperparameter is changed at a time from the baseline (2 convolution layers, dropout 0.3, learning rate 0.001). Grey points are the three seeds; black points and lines are their means. Early stopping on validation loss (patience 5, at most 50 epochs).
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The one-layer model and learning rate 0.0003 reached the 50-epoch cap while improving, so <a href="#fig-tune-cnn" class="quarto-xref">Figure&nbsp;13</a> may underestimate their performance. Later runs used validation accuracy for stopping. In <a href="#fig-tune-cnn" class="quarto-xref">Figure&nbsp;13</a>, loss-based stopping selected epoch 3 for the three-layer model, stopping at epoch 8 and restoring those weights. Overconfidence increased validation loss while accuracy still improved, disadvantaging the deeper model. It nevertheless outperformed the two-layer model; <a href="#tbl-tune-stopping" class="quarto-xref">Table&nbsp;8</a> compares stopping rules.</p>
+<div class="cell">
+<div id="tbl-tune-cnn" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tune-cnn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: How much each hyperparameter moves mean validation accuracy, compared with seed noise: the standard deviation from re-running the same configuration with a different seed, pooled over all seven configurations.
+</figcaption>
+<div aria-describedby="tbl-tune-cnn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 21%">
+<col style="width: 24%">
+<col style="width: 15%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Hyperparameter</th>
+<th style="text-align: left;">Values</th>
+<th style="text-align: left;">Mean accuracy per value</th>
+<th style="text-align: left;">Range of means</th>
+<th style="text-align: left;">Range / seed noise</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Convolution layers</td>
+<td style="text-align: left;">1, 2, 3</td>
+<td style="text-align: left;">27.1%, 42.1%, 49.9%</td>
+<td style="text-align: left;">22.8%</td>
+<td style="text-align: left;">8.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dropout rate</td>
+<td style="text-align: left;">0, 0.3, 0.5</td>
+<td style="text-align: left;">44.8%, 42.1%, 43.1%</td>
+<td style="text-align: left;">2.8%</td>
+<td style="text-align: left;">1.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Learning rate</td>
+<td style="text-align: left;">0.0003, 0.001, 0.003</td>
+<td style="text-align: left;">38.7%, 42.1%, 42.0%</td>
+<td style="text-align: left;">3.4%</td>
+<td style="text-align: left;">1.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The three-layer model performs better under both rules in <a href="#tbl-tune-stopping" class="quarto-xref">Table&nbsp;8</a>, but the advantage depends on stopping. Loss-based stopping (patience 5, maximum 50 epochs) gave a 7.8-point advantage; accuracy-based stopping (patience 10, maximum 150) increased it to 11.1 points. Accuracy-based stopping avoids penalties from rising cross-entropy, while short patience can stop slow learners prematurely.</p>
+<div class="cell">
+<div id="tbl-tune-stopping" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tune-stopping-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: Validation accuracy of the 2- and 3-layer CNNs (mean ± SD over 3 seeds) under four early-stopping rules, and the 3-layer advantage in standard errors. The final models use the last rule.
+</figcaption>
+<div aria-describedby="tbl-tune-stopping-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 11%">
+<col style="width: 10%">
+<col style="width: 16%">
+<col style="width: 10%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Stopping rule</th>
+<th style="text-align: left;">2 layers</th>
+<th style="text-align: left;">3 layers</th>
+<th style="text-align: left;">Mean epochs (2 / 3)</th>
+<th style="text-align: left;">3-layer gain</th>
+<th style="text-align: left;">Gain / SE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Validation loss, patience 5, max 50 epochs</td>
+<td style="text-align: left;">42.1% ± 2.5%</td>
+<td style="text-align: left;">49.9% ± 1.8%</td>
+<td style="text-align: left;">36 / 8</td>
+<td style="text-align: left;">7.8%</td>
+<td style="text-align: left;">4.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Validation accuracy, patience 5, max 50 epochs</td>
+<td style="text-align: left;">35.3% ± 13.2%</td>
+<td style="text-align: left;">58.7% ± 1.1%</td>
+<td style="text-align: left;">27 / 16</td>
+<td style="text-align: left;">23.4%</td>
+<td style="text-align: left;">3.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Validation accuracy, patience 10, max 50 epochs</td>
+<td style="text-align: left;">46.9% ± 2.6%</td>
+<td style="text-align: left;">59.6% ± 0.5%</td>
+<td style="text-align: left;">50 / 25</td>
+<td style="text-align: left;">12.8%</td>
+<td style="text-align: left;">8.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Validation accuracy, patience 10, max 150 epochs</td>
+<td style="text-align: left;">48.5% ± 3.3%</td>
+<td style="text-align: left;">59.6% ± 0.5%</td>
+<td style="text-align: left;">58 / 25</td>
+<td style="text-align: left;">11.1%</td>
+<td style="text-align: left;">5.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Because the three-layer model overfits, regularisation was tested. In <a href="#tbl-tune-reg" class="quarto-xref">Table&nbsp;9</a>, dropout 0.5 changed validation accuracy by only 0.1 points (about 0.1 standard errors, likely noise), but reduced the training-validation gap from 30.7 to 11.9 points and cross-entropy from 2.36 to 2.04. The smaller gap partly reflects Keras measuring training accuracy with dropout active; lower cross-entropy also suggests less overconfidence. Validation accuracy remained near 59.6%. L2 left accuracy and the gap largely unchanged but worsened cross-entropy to 2.45; combined with dropout 0.5, accuracy fell to 58.4%. The selected model therefore remains three layers, dropout 0.3 and no L2.</p>
+<div class="cell">
+<div id="tbl-tune-reg" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-tune-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: Regularising the 3-layer CNN: three seeds per setting, validation session 4 only. Change vs current is the difference in mean validation accuracy, with the number of standard errors in brackets. Cross-entropy is the average log of the probability given to the true writer; lower means less overconfident. Training accuracy is the Keras figure at the kept epoch, measured with dropout switched on, so it understates the fit, more so with dropout 0.5. The rule fixed before the runs (switch only for a gain of more than 1 point and 2 standard errors) kept dropout 0.3 without L2.
+</figcaption>
+<div aria-describedby="tbl-tune-reg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 16%">
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Setting</th>
+<th style="text-align: left;">Validation accuracy</th>
+<th style="text-align: left;">Change vs current</th>
+<th style="text-align: left;">Validation cross-entropy</th>
+<th style="text-align: left;">Training accuracy</th>
+<th style="text-align: left;">Training − validation</th>
+<th style="text-align: left;">Mean epochs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">dropout 0.3, no L2 (current)</td>
+<td style="text-align: left;">59.6% ± 0.5%</td>
+<td style="text-align: left;">–</td>
+<td style="text-align: left;">2.36</td>
+<td style="text-align: left;">90.3%</td>
+<td style="text-align: left;">30.7 points</td>
+<td style="text-align: left;">25</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dropout 0.5, no L2</td>
+<td style="text-align: left;">59.8% ± 2.5%</td>
+<td style="text-align: left;">+0.1 points (0.1 SE)</td>
+<td style="text-align: left;">2.04</td>
+<td style="text-align: left;">71.7%</td>
+<td style="text-align: left;">11.9 points</td>
+<td style="text-align: left;">23</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">dropout 0.3, L2 1e-4</td>
+<td style="text-align: left;">59.2% ± 1.7%</td>
+<td style="text-align: left;">-0.5 points (-0.5 SE)</td>
+<td style="text-align: left;">2.45</td>
+<td style="text-align: left;">91.4%</td>
+<td style="text-align: left;">32.3 points</td>
+<td style="text-align: left;">28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">dropout 0.5, L2 1e-4</td>
+<td style="text-align: left;">58.4% ± 0.4%</td>
+<td style="text-align: left;">-1.2 points (-3.4 SE)</td>
+<td style="text-align: left;">2.30</td>
+<td style="text-align: left;">80.7%</td>
+<td style="text-align: left;">22.3 points</td>
+<td style="text-align: left;">31</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
 </div>
 <!-- ---- Siamese tuning · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 </section>
 <section id="sec-tune-siam" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-tune-siam"><span class="header-section-number">6.2</span> Siamese network</h2>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 5 · ≈ 300 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 5 · ≈ 300 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>Which hyperparameters were varied (e.g.&nbsp;margin, embedding size, learning rate, pairs per epoch), over which values, and why?</li>
-<li>Design: number of configurations and seeds. Chosen on validation AUC only.</li>
-<li>How much does validation AUC move across each hyperparameter, compared with seed-to-seed noise?</li>
-<li>The chosen configuration and its single test result.</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>fig-tune-siam</code>. <strong>Reads:</strong> <code>outputs/tuning_siamese.csv</code>. <strong>Code:</strong> <code>R/tune_siamese.R</code>.</p>
-</div>
-</div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tune_siam <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/tuning_siamese.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: sensitivity plot, same style as fig-tune-cnn</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
 <!-- =====================================================================
      CNN vs SIAMESE  ·  Task 6  ·  OWNERS: Maxine, Nicole, Jesse
      ===================================================================== -->
@@ -704,134 +916,237 @@ Table&nbsp;6: Siamese matching performance: known writers on a new session vs un
 </section>
 <section id="sec-comp" class="level1" data-number="7">
 <h1 data-number="7"><span class="header-section-number">7</span> CNN vs Siamese network: digits and sessions</h1>
-<div class="callout callout-style-default callout-warning callout-titled" title="Shared section · Task 6">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Shared section · Task 6
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>The brief asks for:</strong> a comparison of the CNN and Siamese results · a critical discussion of which digits carry more writer information and how session changes affect performance. Maxine and Nicole each report their own model’s digit and session results; Jesse then compares the two side by side.</p>
-</div>
-</div>
 <!-- ---- CNN by digit and session · OWNER: Maxine (Role B) · ≈ 300 words ---- -->
 <section id="sec-comp-cnn" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="sec-comp-cnn"><span class="header-section-number">7.1</span> CNN results by digit and session</h2>
-<div class="callout callout-style-default callout-note callout-titled" title="Owner: Maxine (Role B) · Task 6 · ≈ 300 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Owner: Maxine (Role B) · Task 6 · ≈ 300 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>Digit-only CNNs (one model per digit): which digit alone identifies writers best and worst?</li>
-<li>Does that ranking match the per-digit accuracy of the full model in <a href="#sec-cnn" class="quarto-xref">Section&nbsp;4</a>?</li>
-<li>Leave-one-session-out: accuracy for each held-out session. Is any session unusual?</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>fig-comp-cnn-digitonly</code> · <code>fig-comp-cnn-loso</code>. <strong>Code:</strong> <code>R/cnn_digit_session.R</code>.</p>
-</div>
-</div>
+<!-- Maxine: write the Task 6 (CNN) text in your own words around these exhibits. -->
+<p>To assess session effects, the three-layer CNN was trained on three sessions, stopped on a fourth and tested on the remaining session as a “new day.” Each session served in turn as the test set. Grey points in <a href="#fig-comp-cnn-loso" class="quarto-xref">Figure&nbsp;14</a> show results across three seeds.</p>
+<p>Accuracy ranged from 53.3% on session 4 to 69.5% on session 2, averaging 60.5%. This range was 7.6 times seed variation, indicating a strong session effect. The main test session, session 5, averaged 59.2% and was typical. Session 4 remained hardest despite being used for tuning, suggesting it was more difficult for the model.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: accuracy by digit for digit-only models</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-comp-cnn-loso" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comp-cnn-loso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-comp-cnn-loso-1.png" class="img-fluid figure-img" width="672">
 </div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-cnn-loso-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14: Leave-one-session-out: test accuracy of the 3-layer CNN when each session in turn is the new day. Each model trains on three of the other sessions and early-stops on the fourth (the session before the held-out one). Grey points are three seeds; black points are their means. Holding out session 5 is the main split of <a href="#sec-cnn" class="quarto-xref">Section&nbsp;4</a>.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><a href="#tbl-comp-cnn-digit-session" class="quarto-xref">Table&nbsp;10</a> compares accuracy for each digit (1 000 test images) with each session’s overall accuracy. The best digit changes by session. Across all five sessions, accuracy ranges from 58% for digit 3 to 63% for digit 0, suggesting digit 0 carries more writer information on average. Yet digit 2 is best in sessions 2 and 4 and worst in session 5. Digit rankings therefore do not generalise reliably. The all-digits row repeats the session pattern in <a href="#fig-comp-cnn-loso" class="quarto-xref">Figure&nbsp;14</a>.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Maxine: accuracy by held-out session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div id="tbl-comp-cnn-digit-session" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-comp-cnn-digit-session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: Test accuracy (%) of the 3-layer CNN by digit and held-out session, each the mean of three seeds (1 000 test images per digit and session). The best digit in each session is in bold.
+</figcaption>
+<div aria-describedby="tbl-comp-cnn-digit-session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Digit</th>
+<th style="text-align: right;">Session 1</th>
+<th style="text-align: right;">Session 2</th>
+<th style="text-align: right;">Session 3</th>
+<th style="text-align: right;">Session 4</th>
+<th style="text-align: right;">Session 5</th>
+<th style="text-align: right;">Mean</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0</td>
+<td style="text-align: right;"><strong>65.3</strong></td>
+<td style="text-align: right;">71.8</td>
+<td style="text-align: right;">60.9</td>
+<td style="text-align: right;">52.1</td>
+<td style="text-align: right;">64.2</td>
+<td style="text-align: right;">62.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">54.5</td>
+<td style="text-align: right;">72.8</td>
+<td style="text-align: right;">47.0</td>
+<td style="text-align: right;">58.2</td>
+<td style="text-align: right;">60.4</td>
+<td style="text-align: right;">58.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">62.5</td>
+<td style="text-align: right;"><strong>73.5</strong></td>
+<td style="text-align: right;">66.7</td>
+<td style="text-align: right;"><strong>60.5</strong></td>
+<td style="text-align: right;">48.5</td>
+<td style="text-align: right;">62.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3</td>
+<td style="text-align: right;">53.1</td>
+<td style="text-align: right;">68.3</td>
+<td style="text-align: right;">62.6</td>
+<td style="text-align: right;">48.3</td>
+<td style="text-align: right;">57.5</td>
+<td style="text-align: right;">58.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4</td>
+<td style="text-align: right;">56.6</td>
+<td style="text-align: right;">60.9</td>
+<td style="text-align: right;"><strong>74.6</strong></td>
+<td style="text-align: right;">47.3</td>
+<td style="text-align: right;"><strong>65.6</strong></td>
+<td style="text-align: right;">61.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">All digits</td>
+<td style="text-align: right;">58.4</td>
+<td style="text-align: right;">69.5</td>
+<td style="text-align: right;">62.3</td>
+<td style="text-align: right;">53.3</td>
+<td style="text-align: right;">59.2</td>
+<td style="text-align: right;">60.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>In <a href="#fig-comp-cnn-digitonly" class="quarto-xref">Figure&nbsp;15</a>, models predict the same session-5 test images (1 000 per digit): one is trained on all digits (15 000 images), the other on one digit only (3 000 images). Blue points show standalone information: digit 4 reaches 67% accuracy, digit 0 47%, and digits 1–3 about 53–54%. The gap from the all-digit model measures transfer from other digits. This is largest for digit 0 (+17 points), whose shape alone appears less distinctive; small gaps for digits 1–4 suggest their images often suffice. This partly agrees with <a href="#fig-cnn-digit" class="quarto-xref">Figure&nbsp;7</a>: on session 5, the all-digit model performs best on digit 0 and worst on digit 2.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-comp-cnn-digitonly" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comp-cnn-digitonly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-comp-cnn-digitonly-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-cnn-digitonly-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;15: Can one digit identify the writer on its own? Accuracy on each digit’s 1 000 session-5 test images for a CNN trained only on that digit (3 000 training images) and for the CNN trained on all digits (15 000), three seeds each. Small points are seeds; large points are their means.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <!-- ---- Siamese by digit and session · OWNER: Nicole (Role C) · ≈ 300 words ---- -->
 </section>
 <section id="sec-comp-siam" class="level2" data-number="7.2">
 <h2 data-number="7.2" class="anchored" data-anchor-id="sec-comp-siam"><span class="header-section-number">7.2</span> Siamese results by digit and session</h2>
-<div class="callout callout-style-default callout-important callout-titled" title="Owner: Nicole (Role C) · Task 6 · ≈ 300 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-comp-siam-digit" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comp-siam-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-comp-siam-digit-1.png" class="img-fluid figure-img" width="672">
 </div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Owner: Nicole (Role C) · Task 6 · ≈ 300 words
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-siam-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;16: Siamese matching AUC by digit.
+</figcaption>
+</figure>
 </div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>AUC by digit: which digits separate writers best and worst?</li>
-<li>Same-session vs cross-session positive pairs: how much larger are distances across sessions?</li>
-<li>Cross-digit pairs: does writer identity carry across digits?</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>fig-comp-siam-digit</code> · <code>fig-comp-siam-session</code>. <strong>Reads:</strong> <code>outputs/siamese_test_distances.csv</code>.</p>
 </div>
 </div>
 <div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: AUC by digit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<div id="fig-comp-siam-session" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comp-siam-session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-comp-siam-session-1.png" class="img-fluid figure-img" width="672">
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Nicole: same- vs cross-session distances</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-siam-session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;17: Distances for same-writer pairs from the same session vs different sessions.
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 <!-- ---- Side by side · OWNER: Jesse (A) · ≈ 400 words ---- -->
 </section>
 <section id="sec-comp-both" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="sec-comp-both"><span class="header-section-number">7.3</span> Side by side</h2>
-<div class="callout callout-style-default callout-tip callout-titled" title="Owner: Jesse (Role A) · Task 6 · ≈ 400 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>Owner: Jesse (Role A) · Task 6 · ≈ 400 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Answer these:</strong></p>
-<ul>
-<li>With one script on the same test pairs, how do the PCA baseline, CNN and Siamese embeddings compare on AUC, equal error rate and nearest-centroid writer accuracy?</li>
-<li>Which model suits which question (identify one of 20 known writers vs verify a pair), and what does each cost (e.g.&nbsp;retraining when a new writer is added)?</li>
-<li>Do the digit rankings agree across the CNN, the Siamese network and the EDA?</li>
-<li>How large is the session gap (same-session vs cross-session) for each model?</li>
-<li>Critical caveats: simulated data, one test session, 20 writers.</li>
-</ul>
-<p><strong>Exhibits:</strong> <code>tbl-comp-summary</code> · <code>fig-comp-digit</code> AUC by digit for PCA, CNN and Siamese.</p>
-<p><strong>Reads:</strong> <code>outputs/comparison.csv</code>. <strong>Code:</strong> <code>R/eval_embeddings.R</code> (reads <code>outputs/cnn_embeddings.csv</code>, <code>outputs/siamese_embeddings.csv</code>, <code>data/test_pairs.csv</code>).</p>
-</div>
-</div>
+<p><a href="#sec-cnn" class="quarto-xref">Section&nbsp;4</a> and <a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a> each score their model the way it was trained for: the CNN as a 20-way classifier, the Siamese network as a same/different matcher. To compare them directly, <code>R/eval_embeddings.R</code> scores all three embedding spaces – a PCA baseline (the top 32 principal components of pixels, fitted on a training-session sample, giving the CNN and Siamese embeddings a non-learned reference point), the CNN’s 32-unit embedding layer, and the Siamese encoder’s 32-unit embedding – on the exact same <code>data/test_pairs.csv</code> pairs and the exact same nearest-centroid identification task (classify a session-5 test image to whichever training writer’s embedding centroid it’s closest to).</p>
+<div class="cell">
 <div id="tbl-comp-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test pairs.
+Table&nbsp;11: PCA baseline, CNN and Siamese embeddings scored on the same 1,400 test pairs. AUC and EER are for same-writer matching; nearest-centroid accuracy is session-5 writer identification against training-writer centroids (chance = 5%).
 </figcaption>
 <div aria-describedby="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"outputs/comparison.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: AUC, EER, nearest-centroid accuracy; same- vs cross-session</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
+<div class="cell-output-display">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 11%">
+<col style="width: 24%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: left;">ROC AUC</th>
+<th style="text-align: left;">Equal error rate</th>
+<th style="text-align: left;">Nearest-centroid accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">PCA baseline</td>
+<td style="text-align: left;">0.767</td>
+<td style="text-align: left;">30.4%</td>
+<td style="text-align: left;">38.9%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CNN embedding</td>
+<td style="text-align: left;">0.943</td>
+<td style="text-align: left;">13.3%</td>
+<td style="text-align: left;">58.1%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Siamese embedding</td>
+<td style="text-align: left;">0.844</td>
+<td style="text-align: left;">24.7%</td>
+<td style="text-align: left;">24.0%</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </figure>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Jesse: AUC by digit, one line or bar group per model</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </div>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-comp-digit" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-comp-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-comp-digit-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;18: Matching AUC by digit (same-digit test pairs only) for the PCA baseline, CNN and Siamese network.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>On overall matching, the ranking in <a href="#tbl-comp-summary" class="quarto-xref">Table&nbsp;11</a> is CNN &gt; Siamese &gt; PCA: the CNN embedding reaches 0.943 AUC against the Siamese network’s 0.844 and the PCA baseline’s 0.767, with equal error rate telling the same story in reverse. That’s a little surprising given the Siamese network is the one directly trained to minimise exactly this kind of pairwise distance – the gap is explained by <code>data/test_pairs.csv</code> including cross-digit pairs, which the Siamese network never saw in training (it was trained on same-digit pairs only, <a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>) and matches much worse on; restricted to same-digit pairs, <a href="#fig-comp-digit" class="quarto-xref">Figure&nbsp;18</a> shows the Siamese network is competitive with or ahead of the CNN on most digits. Nearest-centroid identification tells a different story again: the CNN embedding reaches 58.1% accuracy, clearly ahead of the PCA baseline’s 38.9%, while the Siamese embedding trails both at 24.0% – well above the 5% chance rate, but evidently the Siamese network’s contrastive training pulls same-writer pairs together locally without necessarily arranging all 20 writers into compact, well-separated global clusters the way a 20-class softmax classifier is directly pushed to.</p>
+<p>That split points to which model suits which question. If the task is “which of these 20 known writers wrote this”, the CNN is the right tool and the cheaper one to run at inference (one forward pass, one softmax); if it ever needs to cover a 21st writer, though, it needs retraining from scratch, because the output layer itself is sized to 20 classes. If the task is “did the same person write these two samples” – including for someone never seen in training – the Siamese network is the right tool, exactly because it was designed and evaluated for that (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>’s unseen-writer experiment); its cost is a less interpretable per-writer signal, as the centroid result above shows.</p>
+<p>The digit rankings mostly agree across methods: digit 0 is at or near the best-matching digit for both the CNN and the Siamese network in <a href="#fig-comp-digit" class="quarto-xref">Figure&nbsp;18</a>, broadly consistent with the EDA’s digit-0-restricted PCA (<a href="#fig-eda-pca" class="quarto-xref">Figure&nbsp;5</a>) showing clean writer clusters for that digit. The session gap – how much farther apart same-writer pairs sit when they come from different sessions rather than the same one – is present for every model: cross-session distances exceed same-session distances by a factor of 5.9x for the PCA baseline, 3.6x for the CNN, and 2.8x for the Siamese network, confirming that the session drift documented in <a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a> costs every model some matching accuracy, not just the simplest one.</p>
+<p>As with <a href="#sec-split" class="quarto-xref">Section&nbsp;3</a>, these numbers should be read with the data’s limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) – a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.</p>
 <!-- =====================================================================
      CONCLUSION  ·  Task 8  ·  OWNER: not assigned yet  ·  ≈ 300 words
      ===================================================================== -->
@@ -839,35 +1154,9 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 </section>
 <section id="sec-conclusion" class="level1" data-number="8">
 <h1 data-number="8"><span class="header-section-number">8</span> Conclusion</h1>
-<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet · Task 8 · ≈ 300 words">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Owner: not assigned yet · Task 8 · ≈ 300 words
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Must cover:</strong> the answer to each question in one or two sentences · the main limitation · what you would do next with more time or real data.</p>
-</div>
-</div>
 </section>
 <section id="references" class="level1 unnumbered">
 <h1 class="unnumbered">References</h1>
-<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Owner: not assigned yet
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Add a <code>references.bib</code> file and <code>bibliography: references.bib</code> to the YAML header, then cite with <code>[@key]</code>. The list appears here automatically.</p>
-</div>
-</div>
 <div id="refs" role="list">
 
 </div>
@@ -880,34 +1169,8 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 
 <div id="quarto-appendix" class="default"><section id="plagiarism-declaration" class="level1 appendix" data-number="9"><h2 class="anchored quarto-appendix-heading"><span class="header-section-number">9</span> Plagiarism declaration</h2><div class="quarto-appendix-contents">
 
-<div class="callout callout-style-default callout-warning callout-titled" title="Owner: not assigned yet">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Owner: not assigned yet
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Paste the course’s standard plagiarism declaration here, with all three names.</p>
-</div>
-</div>
 </div></section><section id="ai-use-statement" class="level1 appendix" data-number="10"><h2 class="anchored quarto-appendix-heading"><span class="header-section-number">10</span> AI use statement</h2><div class="quarto-appendix-contents">
 
-<div class="callout callout-style-default callout-warning callout-titled" title="Each person fills the rows for their own tasks">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Each person fills the rows for their own tasks
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The brief asks, for each task: (a) what tool you used, (b) what you used it for, (c) if and how you checked its outputs, and (d) how much of what it produced you ended up using.</p>
-</div>
-</div>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 16%">
@@ -931,10 +1194,10 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 <tr class="odd">
 <td>1 Data exploration</td>
 <td>Jesse</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Claude Code</td>
+<td>Drafting the write-up discussing the EDA figures/table</td>
+<td>Re-ran the EDA code myself and checked every cited number against it; rewrote into my own words</td>
+<td>Edited, some</td>
 </tr>
 <tr class="even">
 <td>2 CNN</td>
@@ -955,10 +1218,10 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 <tr class="even">
 <td>4 Evaluation design</td>
 <td>Jesse</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Claude Code</td>
+<td>Writing <code>R/optimism_baseline.R</code> and drafting the write-up</td>
+<td>Ran the script and re-derived the reported gap by hand; rewrote the text into my own words</td>
+<td>Edited, most (code); edited, some (text)</td>
 </tr>
 <tr class="odd">
 <td>5 Hyperparameter sensitivity</td>
@@ -971,10 +1234,10 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
 <tr class="even">
 <td>6 Comparison</td>
 <td>Jesse, Maxine, Nicole</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Jesse: Claude Code</td>
+<td>Jesse: writing <code>R/eval_embeddings.R</code> and drafting the “Side by side” write-up</td>
+<td>Jesse: ran the script and checked <code>outputs/comparison.csv</code> against the numbers cited in text; rewrote the text into my own words</td>
+<td>Jesse: edited, most (code); edited, some (text)</td>
 </tr>
 <tr class="odd">
 <td>7 Git and GitHub</td>
@@ -1406,6 +1669,19 @@ Table&nbsp;7: PCA baseline, CNN and Siamese embeddings scored on the same test p
   });
   </script>
 </div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>University of Cape Town · STA5073Z Data Science for Industry · 2026</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/index.qmd" class="toc-action"><i class="bi bi-github"></i>View source</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>Built with Quarto from the <a href="https://github.com/Maxinechiedza/ds4i_assignment2">GitHub repository</a></p>
+</div>
+  </div>
+</footer>
 
 
 

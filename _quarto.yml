@@ -1,6 +1,34 @@
 project:
   type: website
   output-dir: docs   # GitHub Pages serves this folder (Settings > Pages > main branch, /docs)
+  render:
+    - index.qmd      # the site is the report only (README and AI_USE_LOG stay as GitHub pages)
+  resources:
+    - assets/fonts/
 
 website:
-  title: "DS4I Assignment 2"
+  title: "STA5073Z Assignment 2"
+  search: false
+  repo-url: https://github.com/Maxinechiedza/ds4i_assignment2
+  repo-actions: [source]   # "View source" link under the contents
+  navbar:
+    right:
+      - text: "GitHub repository"
+        icon: github
+        href: https://github.com/Maxinechiedza/ds4i_assignment2
+  page-footer:
+    left: "University of Cape Town · STA5073Z Data Science for Industry · 2026"
+    right: "Built with Quarto from the [GitHub repository](https://github.com/Maxinechiedza/ds4i_assignment2)"
+
+lang: en-GB
+
+# Look of the report: serif text, typeset-style title page, booktabs tables.
+# Styling lives in assets/ (report.scss, fonts.css, title-block.html).
+format:
+  html:
+    theme: [cosmo, assets/report.scss]
+    css: assets/fonts.css
+    template-partials:
+      - assets/title-block.html
+    toc-title: "Contents"
+    date-format: "D MMMM YYYY"

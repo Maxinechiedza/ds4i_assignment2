@@ -1,0 +1,44 @@
+<header id="title-block-header" class="quarto-title-block report-title">
+$if(institution)$
+<p class="report-institution">$institution$</p>
+$endif$
+$if(department)$
+<p class="report-department">$department$</p>
+$endif$
+$if(course)$
+<p class="report-course">$course$</p>
+$endif$
+
+<hr class="report-rule">
+$if(title)$
+<h1 class="title">$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle">$subtitle$</p>
+$endif$
+<hr class="report-rule">
+
+$if(by-author)$
+<div class="report-authors">
+$for(by-author)$
+  <div class="report-author">
+    <span class="report-author-name">$by-author.name.literal$</span>
+    $if(by-author.metadata.student-number)$
+    <span class="report-author-id">$by-author.metadata.student-number$</span>
+    $endif$
+  </div>
+$endfor$
+</div>
+$endif$
+
+$if(date)$
+<p class="report-date date">$date$</p>
+$endif$
+
+$if(abstract)$
+<div class="abstract">
+  <div class="block-title">$labels.abstract$</div>
+  $abstract$
+</div>
+$endif$
+</header>
