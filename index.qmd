@@ -432,10 +432,10 @@ cnn_key <- list(
 )
 ```
 
-Two CNN architectures, with two and three convolutional layers, were built to predict writer identity. @tbl-cnn-arch shows the layers and parameter counts of both. The 3-layer model extends the 2-layer model with an additional 2 × 2 max-pooling layer and a further convolutional layer with 64 filters. Both models end in a 20-unit softmax layer, giving a probability for each of the 20 writers. The 3-layer model is the shared backbone of the Siamese network.
+Two convolutional neural networks (CNNs), with two and three layers, were built to predict writer identity. @tbl-cnn-arch summarises their architectures and parameter counts. The three-layer model adds a 2 × 2 max-pooling layer and a convolutional layer with 64 filters. Both models use a 20-unit softmax output to estimate probabilities for the 20 writers. The three-layer CNN also serves as the Siamese network's shared backbone.
 ```{r}
 #| label: tbl-cnn-arch
-#| tbl-cap: "Layers of the final CNNs. The 3-layer model (26 036 parameters) is the backbone shared with the Siamese network; the 2-layer model has 6 516 parameters. Both use learning rate 0.001, batch size 64, categorical cross-entropy and early stopping on validation accuracy (patience 10, maximum 150 epochs)."
+#| tbl-cap: "Layers of the final CNNs. The 3-layer model (26 036 parameters) is the backbone shared with the Siamese network; the 2-layer model stops after the second convolution (6 516 parameters). Both use learning rate 0.001, batch size 64, categorical cross-entropy, and early stopping on validation accuracy (patience 10, at most 150 epochs)."
 tribble(
   ~Layer,                                  ~`Output shape`,     ~Parameters,             ~`In 2-layer model`,
   "Input: one 28 × 28 image",              "28 × 28 × 1",       "0",                     "yes",
@@ -452,10 +452,10 @@ tribble(
   knitr::kable(align = "llrl")
 ```
 
-The CNNs were trained on sessions 1--3 and validated on session 4. The retained weights are those from the epoch with the best validation accuracy, marked by the grey dashed line in @fig-cnn-training (orange: training; blue: validation). At training, the 3-layer model appears to memorise sessions 1--3, reaching 92% training accuracy by epoch 13, while validation accuracy plateaus near `r pct(cnn_key$val3)` -- more accurate than the 2-layer model, but overconfident. Validation loss for the 3-layer model bottoms out at epoch 3, then climbs steadily to 2.51 by epoch 13. The 2-layer model, by contrast, is underfitting: training accuracy reaches only 60% by epoch 60, and validation accuracy is still rising when training stops. Its validation loss follows the same pattern as the 3-layer model but more slowly, bottoming out at epoch 45 (loss 1.69) before rising to 1.82 at the kept epoch 60.
+Both CNNs were trained on sessions 1–3 and validated on session 4. The grey dashed lines in @fig-cnn-training mark the epochs with the best validation accuracy; orange and blue lines show training and validation, respectively. The three-layer model reaches 92% training accuracy at epoch 13, suggesting it memorises the training sessions, while validation accuracy remains near `r pct(cnn_key$val3)`. Its validation loss is lowest at epoch 3, then rises to 2.51 by epoch 13, indicating overfitting and overconfidence. The two-layer model appears to underfit: training accuracy reaches 60% only at epoch 60, while validation accuracy rises steadily. Its validation loss follows a similar but slower pattern, reaching a minimum of 1.69 at epoch 45 before increasing to 1.82 at the selected epoch, 60.
 ```{r}
 #| label: fig-cnn-training
-#| fig-cap: "Training and validation performance of the convolutional neural networks across epochs."
+#| fig-cap: "Training (sessions 1–3) and validation (session 4) curves of the two final CNNs. The dashed line marks the epoch with the best validation accuracy, whose weights were kept."
 #| fig-height: 6
 #| eval: !expr ready(cnn_files)
 cnn_hist %>%
@@ -471,10 +471,10 @@ cnn_hist %>%
   labs(x = "Epoch", y = NULL, colour = NULL) +
   theme(legend.position = "bottom")
 ```
-A test image counts as a hit if the writer with the highest predicted probability is the true writer; in practical terms, this is the chance of correctly naming the writer of a sample written on a new day. Top-3 accuracy is the share of test images for which the true writer is among the model's three most likely guesses -- i.e. how often the true writer appears on a shortlist of three. Guessing at random gives 5% accuracy and 15% top-3 accuracy. @tbl-cnn-metrics shows that the 3-layer model reaches 56.6% test accuracy and 84.8% top-3 accuracy, clearly ahead of the 2-layer model's 48.5% and 79.5%. Test accuracy is 2--3 points below validation accuracy for both models. The reported ranges come from three random seeds (2026, 2027, 2028), used to check whether a result reflects a genuine effect rather than favourable or unfavourable luck in training. Despite its better test accuracy, the 3-layer model has a higher loss (2.22) because it is overconfident, and cross-entropy penalises confident wrong answers heavily.
+Test accuracy is the proportion of images for which the highest-probability writer is correct; top-3 accuracy is the proportion for which the true writer appears among the three highest-probability predictions. The latter measures whether the model provides a useful shortlist. Random guessing yields 5% accuracy and 15% top-3 accuracy. In @tbl-cnn-metrics, the three-layer model achieves 56.6% test accuracy and 84.8% top-3 accuracy, exceeding the two-layer model's 48.5% and 79.5%. Test accuracy is 2–3 percentage points below validation accuracy for both models. Despite its higher accuracy, the three-layer model has a higher test loss (2.22), because cross-entropy penalises its overconfident incorrect predictions.
 ```{r}
 #| label: tbl-cnn-metrics
-#| tbl-cap: "Writer identification on the 5 000 session-5 test images (250 per writer). Chance performance is 5% accuracy and 15% top-3 accuracy. Validation accuracy is measured on session 4 at the retained epoch."
+#| tbl-cap: "Writer identification on the 5 000 session-5 test images (250 per writer). Guessing would give 5% accuracy and 15% top-3 accuracy. Validation accuracy is on session 4 at the kept epoch."
 #| eval: !expr ready(cnn_files)
 cnn_pred %>%
   group_by(model) %>%
@@ -495,10 +495,10 @@ cnn_pred %>%
   knitr::kable()
 ```
 
-Accuracy is also compared by digit; with 1,000 test images per digit, the 95% interval is about ±3 points, which lets the reader judge which digit-level differences are likely real rather than noise. @fig-cnn-digit shows that digit 2 is the weakest in both models -- consistent evidence across both models that digit 2 carries the least writer-specific information. Digit 0 is the 3-layer model's best digit (63.3% test accuracy) but the 2-layer model's worst digit (39.7%). Digit 4 is the 2-layer model's best digit (60.8% test accuracy) but the 3-layer model's digit test accuracy is lower at 56.6%. So determining which digit carries the most writer information depends partly on the model.
+@fig-cnn-digit compares accuracy by digit, with 1 000 test images per digit and an approximate 95% interval of +/-3 percentage points. Digit 2 is the weakest for both models, suggesting it carries the least writer-identifying information in session 5 test data. Digit 0 is the three-layer model's strongest digit (63.3%) but the two-layer model's weakest (39.7%). Conversely, digit 4 is the two-layer model's strongest (60.8%), while the three-layer model achieves 56.6%. Thus, which digit appears most informative depends partly on the model.
 ```{r}
 #| label: fig-cnn-digit
-#| fig-cap: "Writer-identification accuracy of the CNN across handwritten digits."
+#| fig-cap: "Test accuracy by digit, with 95% intervals (1 000 test images per digit)."
 #| fig-height: 3.5
 #| eval: !expr ready(cnn_files)
 cnn_pred %>%
@@ -514,10 +514,10 @@ cnn_pred %>%
   theme(legend.position = "bottom")
 ```
 
-Accuracy is also compared by writer, to see who gets mistaken for whom. Each writer has 250 test images. @fig-cnn-confusion shows the confusion matrix: correctly identified writers appear as darker diagonal cells, reflecting the higher share of their images assigned the correct label. Writers 9 and 18 are always correctly identified (100% test accuracy); writers 6, 11, 12, 14, 17 and 19 are reliably identified, with test accuracy ranging from 76% to 84%. But note that writer 9 is predicted 443 times, writer 14 392 times, and writer 6 378 times, against 250 expected for each. Writer 10 has a test accuracy of only 27% but a top-3 accuracy of 99.6%: the model mistakes writer 10 for writer 2, assigning writer 2 a probability of 0.55 against writer 10's 0.30. Writer 15 is similarly mistaken for writer 14, and writers 8 and 13 are confused with each other and with writer 5. Writer 5 has 0% test accuracy and is never correctly identified; their test images instead resemble writers 15, 13, 19 and 14, possibly because writer 5's handwriting has drifted from sessions 1--3 towards other writers' styles.
+@fig-cnn-confusion compares predictions by writer; each writer contributes 250 test images. Darker diagonal cells indicate more correct predictions. Writers 9 and 18 are identified with 100% accuracy, while writers 6, 11, 12, 14, 17 and 19 achieve 76–84%. However, writers 9, 14 and 6 are predicted 443, 392 and 378 times, respectively, well above the expected 250. Writer 10 has 27% accuracy but 99.6% top-3 accuracy: it is often confused with writer 2, to which the model assigns 179 of writer 10's test images to writer 2. Writer 15 is also confused with writer 14; writers 8 and 13 are confused with each other and writer 5. Writer 5 has 0% accuracy and is instead classified as writers 15, 13, 19 or 14. One possible explanation is that writer 5's handwriting has shifted across sessions.
 ```{r}
 #| label: fig-cnn-confusion
-#| fig-cap: "Confusion matrix for writer identification using the CNN on the held-out test set."
+#| fig-cap: "Confusion matrix of the 3-layer CNN on the test set. Each row is one true writer's 250 images; shading shows the share assigned to each predicted writer, so a perfect model would only shade the diagonal."
 #| fig-height: 5.5
 #| eval: !expr ready(cnn_files)
 cnn_pred %>%
@@ -534,10 +534,10 @@ cnn_pred %>%
   coord_equal()
 ```
 
-@fig-cnn-writer shows the same per-writer accuracy, ranging from 0% (writer 5) to 100% (writers 9 and 18), alongside the gap between test accuracy and top-3 accuracy. That gap splits errors into two groups: near misses, where the model's top guess is wrong but the true writer is second or third (usually because two writers look alike, as with writers 10 and 2), and far misses, where the true writer isn't even in the top 3. Writer 5 is the extreme case, with a top-3 accuracy of only 4%. These far misses are linked to the overconfidence noted above: 35% of the 3-layer model's wrong answers give the true writer less than 1% probability. This shows that the overall test accuracy of 56.6% conceals substantial variation: the 3-layer model performs very well for some writers and very poorly for others.
+@fig-cnn-writer shows that writer-level test accuracy ranges from 0% for writer 5 to 100% for writers 9 and 18. The gap between test and top-3 accuracy distinguishes near misses, where the true writer ranks second or third, from far misses, where the true writer is absent from the top three. Writer 10's confusion with writer 2 illustrates a near miss; writer 5, with only 4% top-3 accuracy, represents an extreme far-miss case. Overconfidence also contributes: for 35% of the three-layer model's incorrect predictions, the true writer receives less than 1% probability. Overall, the 56.6% test accuracy conceals substantial variation in performance across writers. These differences show why aggregate accuracy alone does not fully describe model performance.
 ```{r}
 #| label: fig-cnn-writer
-#| fig-cap: "Variation in CNN writer-identification performance across individual writers."
+#| fig-cap: "3-layer CNN: test accuracy and top-3 accuracy for each writer, sorted by accuracy."
 #| fig-height: 4.5
 #| eval: !expr ready(cnn_files)
 cnn_pred %>%
@@ -599,15 +599,9 @@ To classify a pair as a match or non-match, a distance threshold was selected on
 #| label: siam-metrics-prep
 #| include: false
 #| eval: !expr ready("outputs/siamese_unseen_writer_results.csv")
-# Nicole: these three numbers (and the threshold quoted in the text below)
-# come from your own run of Siamese.R, not from outputs/siamese_test_distances.csv
-# -- that file hasn't been re-exported from the same run, so recomputing AUC
-# from it gives a different number (0.844) to what's reported here. Kept as
-# typed-in constants for now, matching the Overleaf draft, rather than
-# computed from that file. When you re-run and re-export
-# outputs/siamese_test_distances.csv (and ideally also save this summary to
-# its own CSV, e.g. outputs/siamese_test_results.csv), switch this back to
-# reading it in, the way every other number in this report is sourced.
+# Main-split test results from the Siamese.R run reported in the text, typed in.
+# outputs/siamese_test_distances.csv was saved from a different run, so
+# recomputing from it gives a slightly different AUC (0.844).
 siam_auc     <- 0.8512
 eer          <- 0.2371
 siam_bal_acc <- 0.7457
@@ -685,10 +679,10 @@ tibble(
 
 ## CNN {#sec-tune-cnn}
 
-A limited hyperparameter optimisation for the CNN model was conducted. Dropout was varied over values 0, 0.3 and 0.5, number of convolution layers varied at 1, 2 and 3 layers and learning rate varied at 0.0003, 0.001 and 0.003. Settings were varied one at a time, so interactions were not tested, and there were only 3 seeds and one validation session and fixed early stopping on validation loss with patience 5 and maximum 50 epochs. @fig-tune-cnn shows that the best setting is 3 convolution layers, keeping learning rate 0.001 and dropout 0.3. It averaged 49.9% validation accuracy making depth the only one of the three settings that made a real difference since the model is robust to dropout and learning rate because they stay within the seed to seed spread. The differences for the dropout rate are the same size as re-running with a different seed since the gap is about 1 times seed noise (45%, 42%, 43% validation accuracy for the dropout rate 0, 0.3 and 0.5 respectively) and the learning rate 0.003 was twice as unstable across seeds (spread 0.052 vs about 0.025) since bigger steps make training noisier, even when the average is similar.
+The CNN hyperparameter search varied dropout (0, 0.3, 0.5), depth (one to three convolutional layers) and learning rate (0.0003, 0.001, 0.003), one setting at a time. Interactions were not tested; runs used three seeds, one validation session, loss-based stopping (patience 5) and a 50-epoch cap. In @fig-tune-cnn, three layers with dropout 0.3 and learning rate 0.001 performed best, averaging 49.9% validation accuracy. Depth had the clearest effect. Dropout results (45%, 42%, 43%) were within seed variation, while learning rate 0.003 was less stable (spread 0.052 versus about 0.025). These findings should be interpreted cautiously given the limited search design.
 ```{r}
 #| label: fig-tune-cnn
-#| fig-cap: "Validation performance of the CNN under different hyperparameter configurations."
+#| fig-cap: "CNN validation accuracy (session 4) when one hyperparameter is changed at a time from the baseline (2 convolution layers, dropout 0.3, learning rate 0.001). Grey points are the three seeds; black points and lines are their means. Early stopping on validation loss (patience 5, at most 50 epochs)."
 #| fig-height: 3.2
 #| eval: !expr ready("outputs/tuning_cnn.csv")
 tune_cnn <- read_csv("outputs/tuning_cnn.csv", show_col_types = FALSE)
@@ -712,12 +706,10 @@ tune_long %>%
   labs(x = NULL, y = "Validation accuracy (session 4)")
 ```
 
-Later in the experiment, we found that the 1-layer model and learning rate 0.0003 both hit the 50-epoch cap. They were still improving when training stopped, so their scores are slight underestimates in @fig-tune-cnn. To fix this, the early stopping was then set to validation accuracy.
-
-Note that @fig-tune-cnn comes from the early runs that stopped on validation loss. With early stopping on validation loss and patience 5, the 3-layer model hit its lowest loss at epoch 3, stopped at epoch 8, and restored the epoch-3 weights but understated the 3-layer model because validation loss rose from overconfidence while accuracy still improved. The stopping rule held the 3-layer model back more than the 2-layer one, yet it still had better validation accuracy. So the plot understates the depth effect, and @tbl-tune-stopping shows the fair comparison.
+The one-layer model and learning rate 0.0003 reached the 50-epoch cap while improving, so @fig-tune-cnn may underestimate their performance. Later runs used validation accuracy for stopping. In @fig-tune-cnn, loss-based stopping selected epoch 3 for the three-layer model, stopping at epoch 8 and restoring those weights. Overconfidence increased validation loss while accuracy still improved, disadvantaging the deeper model. It nevertheless outperformed the two-layer model; @tbl-tune-stopping compares stopping rules.
 ```{r}
 #| label: tbl-tune-cnn
-#| tbl-cap: "Effect of each hyperparameter on mean validation accuracy, compared with seed noise."
+#| tbl-cap: "How much each hyperparameter moves mean validation accuracy, compared with seed noise: the standard deviation from re-running the same configuration with a different seed, pooled over all seven configurations."
 #| eval: !expr ready("outputs/tuning_cnn.csv")
 seed_sd <- tune_cnn %>%
   group_by(varied, n_conv, dropout, learning_rate) %>%
@@ -740,10 +732,10 @@ tune_long %>%
   knitr::kable()
 ```
 
-How big the depth effect looks depends on the stopping rule. Loss-based stopping stopped the 3-layer model early, because it becomes overconfident while still improving and the 2-layer model trained the full 50 epochs. Accuracy-based stopping fixes that, but with short patience it can stop a slow learner too early and with a few epochs it can stop a model that is still improving, so patience and epochs is increased to 10 and 150 respectively. Depth wins under every rule making the 3-layer model the better model as shown in @tbl-tune-stopping. The size of its advantage depends on the stopping rule, for instance with accuracy-based stopping patience 10 and maximum epoch 150, the 3-layer model and 2-layer model have 11.1% difference in validation accuracy but with loss-based stopping, patience 5 and maximum epoch 50, the 3-layer model and 2-layer model have 7.8% difference in validation accuracy with 3-layer model having higher validation accuracy in both settings.
+The three-layer model performs better under both rules in @tbl-tune-stopping, but the advantage depends on stopping. Loss-based stopping (patience 5, maximum 50 epochs) gave a 7.8-point advantage; accuracy-based stopping (patience 10, maximum 150) increased it to 11.1 points. Accuracy-based stopping avoids penalties from rising cross-entropy, while short patience can stop slow learners prematurely.
 ```{r}
 #| label: tbl-tune-stopping
-#| tbl-cap: "Validation accuracy of the 2- and 3-layer CNNs (mean ± SD across three seeds) under four early-stopping rules, and the 3-layer advantage in standard errors. The final models use the last rule."
+#| tbl-cap: "Validation accuracy of the 2- and 3-layer CNNs (mean ± SD over 3 seeds) under four early-stopping rules, and the 3-layer advantage in standard errors. The final models use the last rule."
 #| eval: !expr ready("outputs/tuning_cnn.csv", "outputs/tuning_cnn_valacc_p5.csv", "outputs/tuning_cnn_valacc_p10.csv", "outputs/tuning_cnn_valacc_p10_e150.csv")
 rule_files <- c(
   "Validation loss, patience 5, max 50 epochs"       = "outputs/tuning_cnn.csv",
@@ -774,10 +766,10 @@ stop_runs %>%
   knitr::kable()
 ```
 
-The 3-layer model clearly overfits, so we applied regularisation to it; we found that regularisation does not materially change accuracy. @tbl-tune-reg shows that the best gain is +0.1 points, or 0.1 standard errors, which would be pure noise. This extends the @tbl-tune-cnn finding that dropout does not matter, but it does shrink the training-validation gap from 30.7 to 11.9 points and lowers the validation cross-entropy from 2.36 to 2.04, making the model less confident. Validation accuracy hardly moves (around 59.6%), but the measures of fit and confidence do. L2 regularisation applied to the 3-layer model makes no difference either, leaving validation accuracy and the training-validation gap essentially unchanged while making cross-entropy slightly worse (2.45). Combined with dropout 0.5 it gives the lowest accuracy of all settings tested (58.4%). No setting passed this bar, so the final model remains the 3-layer architecture with dropout 0.3 and no L2 regularisation, as decided on validation data.
+Because the three-layer model overfits, regularisation was tested. In @tbl-tune-reg, dropout 0.5 changed validation accuracy by only 0.1 points (about 0.1 standard errors, likely noise), but reduced the training-validation gap from 30.7 to 11.9 points and cross-entropy from 2.36 to 2.04. The smaller gap partly reflects Keras measuring training accuracy with dropout active; lower cross-entropy also suggests less overconfidence. Validation accuracy remained near 59.6%. L2 left accuracy and the gap largely unchanged but worsened cross-entropy to 2.45; combined with dropout 0.5, accuracy fell to 58.4%. The selected model therefore remains three layers, dropout 0.3 and no L2.
 ```{r}
 #| label: tbl-tune-reg
-#| tbl-cap: "Regularisation of the 3-layer CNN across three random seeds. Results are based on validation session 4. The selection rule retained dropout 0.3 without L2 regularisation."
+#| tbl-cap: "Regularising the 3-layer CNN: three seeds per setting, validation session 4 only. Change vs current is the difference in mean validation accuracy, with the number of standard errors in brackets. Cross-entropy is the average log of the probability given to the true writer; lower means less overconfident. Training accuracy is the Keras figure at the kept epoch, measured with dropout switched on, so it understates the fit, more so with dropout 0.5. The rule fixed before the runs (switch only for a gain of more than 1 point and 2 standard errors) kept dropout 0.3 without L2."
 #| eval: !expr ready("outputs/tuning_cnn_reg.csv")
 reg_levels <- c("dropout 0.3, no L2 (current)", "dropout 0.5, no L2",
                 "dropout 0.3, L2 1e-4", "dropout 0.5, L2 1e-4")
@@ -862,12 +854,12 @@ This is consistent with the network having been trained only on same-digit pairs
 
 ## CNN results by digit and session {#sec-comp-cnn}
 
-To see whether a change of session affects test accuracy, the 3-layer model is trained on three sessions, early-stopped on the fourth, and tested on the fifth session, which is viewed as the new day. The fifth session is the held out session and every session gets a turn to be testing data. The leave-one-session-out model was run over 3 seeds to account for luck, they are the grey points in @fig-comp-cnn-loso.
+To assess session effects, the three-layer CNN was trained on three sessions, stopped on a fourth and tested on the remaining session as a "new day." Each session served in turn as the test set. Grey points in @fig-comp-cnn-loso show results across three seeds.
 
-Accuracy depends strongly on which session is the new day: from 53.3% (session 4) to 69.5% (session 2), averaging 60.5%. That spread is 7.6 times the seed-to-seed noise, so the session effect is real. The main split (session 5, 59.2% over three seeds) sits in the middle, so the day is typical rather than lucky or unlucky. Session 4 is the hardest even though the settings were tuned on it, so it is genuinely a harder day.
+Accuracy ranged from 53.3% on session 4 to 69.5% on session 2, averaging 60.5%. This range was 7.6 times seed variation, indicating a strong session effect. The main test session, session 5, averaged 59.2% and was typical. Session 4 remained hardest despite being used for tuning, suggesting it was more difficult for the model.
 ```{r}
 #| label: fig-comp-cnn-loso
-#| fig-cap: "CNN writer-identification performance under different held-out session conditions."
+#| fig-cap: "Leave-one-session-out: test accuracy of the 3-layer CNN when each session in turn is the new day. Each model trains on three of the other sessions and early-stops on the fourth (the session before the held-out one). Grey points are three seeds; black points are their means. Holding out session 5 is the main split of @sec-cnn."
 #| fig-height: 3.2
 #| eval: !expr ready("outputs/cnn_loso.csv")
 read_csv("outputs/cnn_loso.csv", show_col_types = FALSE) %>%
@@ -880,10 +872,10 @@ read_csv("outputs/cnn_loso.csv", show_col_types = FALSE) %>%
   labs(x = "Held-out test session", y = "Test accuracy")
 ```
 
-To see which digits carry more writer information per session, the test accuracy of the 3-layer model is separated per session by digit to see how much test accuracy each digit (1,000 test images) contributed to the overall test accuracy of that session.
+@tbl-comp-cnn-digit-session compares accuracy for each digit (1 000 test images) with each session's overall accuracy. The best digit changes by session. Across all five sessions, accuracy ranges from 58% for digit 3 to 63% for digit 0, suggesting digit 0 carries more writer information on average. Yet digit 2 is best in sessions 2 and 4 and worst in session 5. Digit rankings therefore do not generalise reliably. The all-digits row repeats the session pattern in @fig-comp-cnn-loso.
 ```{r}
 #| label: tbl-comp-cnn-digit-session
-#| tbl-cap: "Test accuracy (%) of the 3-layer CNN by digit and held-out session, averaged over three seeds (1,000 images per digit and session). The highest digit accuracy in each session is bold."
+#| tbl-cap: "Test accuracy (%) of the 3-layer CNN by digit and held-out session, each the mean of three seeds (1 000 test images per digit and session). The best digit in each session is in bold."
 #| eval: !expr ready("outputs/cnn_loso.csv", "outputs/cnn_loso_by_digit.csv")
 loso_digit <- read_csv("outputs/cnn_loso_by_digit.csv", show_col_types = FALSE) %>%
   group_by(test_session, digit) %>%
@@ -912,12 +904,10 @@ bind_rows(by_digit_rows, all_row) %>%
   knitr::kable(align = "lrrrrrr")
 ```
 
-The best digit changes from session to session (the bold cells). Averaged over sessions, every digit lands between 58% (digit 3) and 63% (digit 0), so on average across all 5 sessions, digit 0 seems to have more writer information than digit 3. Digit 2 is best in sessions 2 and 4 but worst in session 5, the main test day. So a digit ranking from one session does not carry over. The all digits row restates the session effect discussed in @fig-comp-cnn-loso.
-
-To see which digit carries more writer information on its own, the models are tested on the same images (the 1 000 session-5 images of one digit) where one model is trained on all digits and the other model is trained on a specific one digit. So instead of being trained on 15 000 images, the 'trained on this digit only' model is trained on 3 000 images of a specific digit. @fig-comp-cnn-digitonly shows the test accuracy scores for predictions on the specific digit using test images from session 5.
+In @fig-comp-cnn-digitonly, models predict the same session-5 test images (1 000 per digit): one is trained on all digits (15 000 images), the other on one digit only (3 000 images). Blue points show standalone information: digit 4 reaches 67% accuracy, digit 0 47%, and digits 1–3 about 53–54%. The gap from the all-digit model measures transfer from other digits. This is largest for digit 0 (+17 points), whose shape alone appears less distinctive; small gaps for digits 1–4 suggest their images often suffice. This partly agrees with @fig-cnn-digit: on session 5, the all-digit model performs best on digit 0 and worst on digit 2.
 ```{r}
 #| label: fig-comp-cnn-digitonly
-#| fig-cap: "CNN writer-identification performance when restricting the evaluation to individual digits."
+#| fig-cap: "Can one digit identify the writer on its own? Accuracy on each digit's 1 000 session-5 test images for a CNN trained only on that digit (3 000 training images) and for the CNN trained on all digits (15 000), three seeds each. Small points are seeds; large points are their means."
 #| fig-height: 3.5
 #| eval: !expr ready("outputs/cnn_digit_only.csv", "outputs/cnn_loso_by_digit.csv")
 digit_cmp <- bind_rows(
@@ -936,14 +926,6 @@ ggplot(digit_cmp, aes(factor(digit), accuracy, colour = model)) +
   labs(x = "Digit", y = "Test accuracy (session 5)", colour = NULL) +
   theme(legend.position = "bottom")
 ```
-
-The blue points (digit only) show how much writer information is in that digit by itself. A writer's 4s are distinctive enough to identify them 67% of the time with nothing else to go on. Their 0s alone manage only 47% of the time. Digits 1-3 sit around 53-54%.
-
-The gap between red and blue shows how much knowing the writer's other digits helps. A big positive gap (+17 points for digit 0) means traits the model learned from the other digits carry over. If a writer's 1s to 4s are slanted, thick-stroked or small, their 0s probably are too. That helps most where the digit's own shape says little about the writer like the digit 0.
-
-A gap near zero (digits 1–4) means the digit's own images already hold enough to recognize the writer. Seeing the other digits adds nothing measurable, even though the full model had five times more images.
-
-@fig-comp-cnn-digitonly results support what is discussed earlier in @fig-cnn-digit where the 3-layer model had digit 0 as best test accuracy and digit 2 as the worst test accuracy on session 5.
 
 ## Siamese results by digit and session {#sec-comp-siam}
 
@@ -1113,14 +1095,19 @@ These findings are limited by the use of clean, simulated handwriting from only 
 
 For each of the nine tasks in the brief, we record: the tool used, what it was used for, how its output was checked, and roughly how much of what it produced was used as-is versus rewritten. A full, dated log of every individual interaction is kept in [`AI_USE_LOG.md`](https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md) in the project repository; this table summarises it per task.
 
-| Task | Filled by | Tool | Used for | Checked how | How much used |
-|------|-----------|------|----------|--------------|----------------|
-| 1. Data exploration | Jesse | Claude Code | Drafting the write-up discussing the EDA figures and table | Re-ran the EDA code and checked every cited number against it; rewrote into own words | Edited, some |
-| 2. CNN | Maxine | Claude | CNN code (`get_split()`, `build_cnn()` in `R/cnn_functions.R`); help interpreting results (top-3 accuracy, overfitting vs. validation selection, digit-only vs. all-digit models); fact-checking own draft text | Ran all code in RStudio and checked image dimensions and per-writer counts; checked interpretations and numbers against the saved output files | Most, as-is for code; edited, some for text |
-| 3. Siamese network | Nicole | ChatGPT | Troubleshooting the Siamese R code (pair construction, training, contrastive loss, evaluation); refining figures (pairs, distances, ROC); revising the results write-up | Inspected all suggested code edits and ran them in RStudio; checked outputs, pair construction and figures against saved results | Edited, some |
-| 4. Evaluation design | Jesse | Claude Code | Debugging, editing and refining `R/optimism_baseline.R` (my own k-NN leakage baseline script) and drafting the write-up | Wrote and ran the script myself, retesting after each change; re-derived the reported accuracy gap by hand; rewrote the text into own words | Edited, some (code); edited, some (text) |
-| 5. Hyperparameter sensitivity | Maxine, Nicole | Claude; ChatGPT | Maxine: tuning scripts (`R/tune_cnn.R`, `R/tune_cnn_valacc.R`, `R/tune_cnn_reg.R`) and diagnosing early-stopping issues. Nicole: Siamese tuning experiments and sensitivity plots (learning rate, margin, embedding dimension) | Maxine: ran every fit herself and read the learning curves; reproduced a seed to confirm. Nicole: ran all suggested edits in R, checked CSV outputs and seed variability | Maxine: most, edited. Nicole: most, edited |
-| 6. Comparison | Jesse, Maxine, Nicole | Jesse: Claude Code. Maxine: Claude. Nicole: ChatGPT | Jesse: debugging, editing and refining `R/eval_embeddings.R` (my own script) and drafting the "Side by side" write-up. Maxine: `R/cnn_digit_session.R` (leave-one-session-out, digit-only CNNs) and interpretation help. Nicole: Siamese digit/session figures and write-up revision | Jesse: wrote and ran the script myself, retesting after each change; checked `outputs/comparison.csv` against cited numbers. Maxine: ran both scripts; reproduced the main 56.6% result on the session-5 fold. Nicole: ran edits and compared figures to saved output files | Jesse: edited, some (code); edited, some (text). Maxine: most, edited. Nicole: edited, some |
-| 7. Git and GitHub | Maxine | Claude | Repo set-up (layout, `README.md` workflow, `submission.txt`); fixing `usethis`/`gh` and GitHub Pages errors; git commands for commits/merges | Repo works for all three group members; pull requests merged without conflicts; Pages site loaded correctly | Most, as-is |
-| 8. Report | All | Maxine: Claude. Jesse: Claude Code. Nicole: ChatGPT | Maxine: report template (`index.qmd` structure, `_quarto.yml`). Jesse: drafting Data/Evaluation/Comparison prose. Nicole: drafting Introduction and Conclusion | Maxine: template rendered correctly with Quarto. Jesse: re-ran underlying code to confirm every cited number; rewrote into own words. Nicole: reviewed suggestions against the report's actual results | Edited, some (all three) |
-| 9. GitHub Pages | Maxine | Claude | GitHub Pages set-up and troubleshooting ("No such file docs" error) | Pages site loaded correctly in the browser | Most, as-is |
+| Task | Member | \(a\) Tool | \(b\) Used for | \(c\) How checked | \(d\) How much used |
+|------------|---------|----------|----------------------------|---------------------------|--------------|
+| 1 Data exploration | Jesse | Claude Code | Drafting the write-up discussing the EDA figures/table | Re-ran the EDA code myself and checked every cited number against it; rewrote into my own words | Edited, some |
+| 2 CNN | Maxine | Claude | CNN code: `get_split()` and `build_cnn()` in `R/cnn_functions.R`, with explanations of one-hot labels, pixel scaling and the layer sizes; explanations to help me interpret results (top-3 accuracy, overfitting vs choosing on validation); review of my draft text (fact-check against the results, word counts) | Ran the code in RStudio and checked the image dimensions and the 750 training images per writer; checked the numbers against the output files; I corrected the facts and rewrote the flagged passages myself | Code: most, as-is. Explanations and text review: some, edited |
+| 3 Siamese network | Nicole | ChatGPT | Troubleshooting the Siamese network R code (pair construction, model training, contrastive loss and evaluation metrics); refining the Siamese figures (positive/negative pairs, distance distributions, ROC curves); reviewing and revising the Siamese analysis and results write-up for clarity, structure, consistency and interpretation | Inspected all suggested code edits and ran them in RStudio; inspected model outputs, pair construction and evaluation results; compared the figures with the saved output files; reviewed the wording before incorporating edits | Edited, some |
+| 4 Evaluation design | Jesse | Claude Code | Debugging, editing and refining `R/optimism_baseline.R` -- my own k-NN leakage baseline script -- and drafting the write-up | Wrote and ran the script myself, retesting after each change; re-derived the reported accuracy gap by hand; rewrote the text into my own words | Edited, some (code); edited, some (text) |
+| 5 Hyperparameter sensitivity | Maxine | Claude | Tuning design and scripts `R/tune_cnn.R`, `R/tune_cnn_valacc.R` and `R/tune_cnn_reg.R` (regularisation check with a decision rule fixed before the runs); reading effects against seed noise; diagnosing early-stopping problems (validation loss vs accuracy, patience, epoch cap); explanations and review of my draft text | Ran every fit myself and read the learning curves; re-running a seed reproduced the same result; the current setting re-run matched earlier runs exactly; I corrected the facts and rewrote the flagged passages myself | Scripts: most, edited. Explanations and text review: some, edited |
+| 5 Hyperparameter sensitivity | Nicole | ChatGPT | Hyperparameter tuning and plotting learning rate, margin and embedding dimension sensitivity; revising the tuning write-up | Inspected all suggested edits to the tuning experiments and ran them in R; checked the CSV outputs, seed variability and plotted results; reviewed the wording before incorporating edits | Tuning: edited, most. Write-up: edited, some |
+| 6 Comparison | Jesse | Claude Code | Debugging, editing and refining `R/eval_embeddings.R` -- my own script -- and drafting the "Side by side" write-up | Wrote and ran the script myself, retesting after each change; checked `outputs/comparison.csv` against cited numbers | Edited, some (code); edited, some (text) |
+| 6 Comparison | Maxine | Claude | `R/cnn_digit_session.R` (leave-one-session-out and digit-only CNNs, 3 seeds); explanations of which exhibit answers which brief question and of digit-only vs all-digit models; review of my draft text | Ran the script; the session-5 fold reproduced the main 56.6%; checked the numbers against the output files; I corrected the facts and rewrote the flagged passages myself | Script: most, edited. Explanations and text review: some, edited |
+| 6 Comparison | Nicole | ChatGPT | Refining the Siamese digit-level performance and session-effect figures; revising the results write-up | Ran all suggested edits to the plotting code, inspected the figures and compared them with the saved output files; reviewed the wording before incorporating edits | Edited, some |
+| 7 Git and GitHub | Maxine | Claude | Planning the three-person work split; GitHub set-up (repo layout, `README.md` workflow rules, `submission.txt`); fixing the `usethis`/`gh` "check_string" error; commit, push and merge commands; tidying `index.qmd` after RStudio's Visual mode reformatted other members' sections | We read and adjusted the plan; the repo works for all three of us; diffs against `main` touched only my sections; pull requests merged without conflicts | Plan and set-up: most, edited. Git commands: most, as-is |
+| 8 Report | Jesse | Claude Code | Drafting Data/Evaluation/Comparison prose | Re-ran underlying code to confirm every cited number; rewrote into own words | Edited, some |
+| 8 Report | Maxine | Claude | Report template: `index.qmd` with owner boxes and figure labels, and `_quarto.yml` | Template rendered with Quarto | Most, edited |
+| 8 Report | Nicole | ChatGPT | Drafting and refining the introduction and conclusion, including summarising the CNN and Siamese findings | Reviewed the suggestions against the report's results and model comparisons | Edited, some |
+| 9 GitHub Pages | Maxine | Claude | GitHub Pages set-up and fixing the "No such file docs" error; restyling the site (title page, fonts, table and caption styling, hidden code, repo links) and rendering it | The Pages site loaded in the browser; checked the restyled site: text and figures unchanged | Set-up: most, edited. Restyling: most, as-is |

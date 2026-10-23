@@ -188,7 +188,7 @@ Figure&nbsp;1: One image per writer (rows) and digit (columns), session 1, repli
 <img src="index_files/figure-html/fig-eda-sessions-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-eda-sessions-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Writer 1’s digit 0, four replicates (rows) across sessions 1–5 (columns). Later sessions show a visibly heavier, more angular stroke.
+Figure&nbsp;2: Writer 1’s digit 0 across five sessions (columns) and four replicates (rows).
 </figcaption>
 </figure>
 </div>
@@ -228,7 +228,7 @@ Figure&nbsp;4: Five simple image features, boxplotted by writer, session and dig
 <div id="tbl-eda-variance" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Share of feature variance (after removing each feature’s digit mean) between writers, between sessions within a writer, and within a session.
+Table&nbsp;1: Variance decomposition of handwriting features after removing digit-level mean differences.
 </figcaption>
 <div aria-describedby="tbl-eda-variance-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -304,7 +304,7 @@ Figure&nbsp;5: PCA of raw pixels. Top: a 5,000-image sample across all digits �
 <div id="tbl-split-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Number of images in each split. split_main is the session-based split used by both models (sessions 1-3/4/5 = train/val/test); split_writer is the writer-held-out split (14/3/3 writers = train/val/test), used only for the Siamese network’s unseen-writer experiment.
+Table&nbsp;2: Number of images in each split. The session-based split holds out sessions for validation and testing, while the writer-based split holds out entire writers.
 </figcaption>
 <div aria-describedby="tbl-split-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -343,7 +343,7 @@ Table&nbsp;2: Number of images in each split. split_main is the session-based sp
 <div id="tbl-split-optimism" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Baseline writer accuracy on a random image split vs the session-held-out split. The baseline is a k-NN classifier (k = 15) on five simple per-image features, standardised on the training features of each split.
+Table&nbsp;3: Baseline writer-identification accuracy under random image splitting and session-held-out splitting.
 </figcaption>
 <div aria-describedby="tbl-split-optimism-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -616,7 +616,8 @@ Figure&nbsp;10: Example positive (same writer) and negative (different writer) t
 </div>
 </div>
 <p>The network was trained using contrastive loss, which pulls same-writer embeddings closer together and pushes different-writer embeddings apart. Positive pairs are penalised for large distances, while negative pairs are penalised when their distance falls below a margin of 1. Training used Adam with a learning rate of 0.001 and early stopping based on validation loss.</p>
-<p>To classify a pair as a match or non-match, a distance threshold was selected on validation pairs to maximise balanced accuracy. Performance is then measured using ROC AUC, balanced accuracy and equal error rate (EER). ROC AUC measures how well genuine and different-writer pairs can be distinguished across thresholds, while EER is the point where false-acceptance and false-rejection rates are approximately equal. <a href="#fig-siam-dist" class="quarto-xref">Figure&nbsp;11</a> shows that genuine pairs generally have smaller embedding distances than different-writer pairs, although the distributions overlap.</p>
+<p>To classify a pair as a match or non-match, a distance threshold was selected on validation pairs to maximise balanced accuracy, giving equal weight to correctly accepting genuine pairs and rejecting different-writer pairs. Performance was then measured using ROC AUC, balanced accuracy and equal error rate (EER). ROC AUC measures how well genuine and different-writer pairs can be distinguished across thresholds, while EER is the point where false-acceptance and false-rejection rates are approximately equal.</p>
+<p>The final tuned model achieved a test ROC AUC of 0.851, balanced accuracy of 74.6% and approximate EER of 23.7%, using a validation-selected threshold of 0.391. <a href="#fig-siam-dist" class="quarto-xref">Figure&nbsp;11</a> shows that genuine pairs generally have smaller embedding distances than different-writer pairs, although the distributions overlap.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-siam-dist" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -639,20 +640,20 @@ Figure&nbsp;11: Embedding distances for same-writer and different-writer test pa
 <img src="index_files/figure-html/fig-siam-roc-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-siam-roc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;12: ROC curves for same-writer matching.
+Figure&nbsp;12: ROC curve for same-writer matching on the held-out test pairs.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p><a href="#fig-siam-roc" class="quarto-xref">Figure&nbsp;12</a> shows that the model distinguishes writers better than chance, but errors remain. A false acceptance incorrectly matches two different writers, while a false rejection fails to recognise two samples from the same writer. <a href="#tbl-siam-metrics" class="quarto-xref">Table&nbsp;6</a> summarises matching performance: using a validation-selected threshold of 0.391, the network reaches 0.851 ROC AUC, an EER of 23.71%, and 74.57% balanced accuracy on the 1,400 held-out test pairs (both same-digit and cross-digit).</p>
+<p><a href="#fig-siam-roc" class="quarto-xref">Figure&nbsp;12</a> shows that the model distinguishes writers better than chance, but errors remain. A false acceptance incorrectly matches two different writers, while a false rejection fails to recognise two samples from the same writer.</p>
 <p>An additional experiment tested whether the learned similarity measure transfers to writers excluded entirely from training. Unlike the main session-based split, this experiment used 14 training writers, three validation writers and three test writers. A separate model was trained from scratch, with its threshold selected using validation writers before evaluating the unseen test writers.</p>
-<p>The unseen-writer model achieved an AUC of 0.893, balanced accuracy of 77.8% and EER of 18.6%, suggesting that the network learned features that transfer to new identities. However, these results should not be interpreted as an improvement over the main experiment: the unseen-writer evaluation used same-digit pairs only, while the main test set also included cross-digit pairs, making the two evaluations different in difficulty.</p>
+<p>The unseen-writer model achieved an AUC of 0.893, balanced accuracy of 77.8% and EER of 18.6%, suggesting that the network learned features that transfer to new identities. However, these results should not be interpreted as an improvement over the main experiment. The unseen-writer evaluation used same-digit pairs, while the main test set also included cross-digit pairs, making the two evaluations different in difficulty.</p>
 <div class="cell">
 <div id="tbl-siam-metrics" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;6: Siamese matching performance: known writers on a new session vs unseen writers.
+Table&nbsp;6: Siamese same-writer verification performance on the held-out session and unseen-writer evaluations. The decision threshold was selected using validation data.
 </figcaption>
 <div aria-describedby="tbl-siam-metrics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -905,7 +906,7 @@ Table&nbsp;9: Regularising the 3-layer CNN: three seeds per setting, validation 
 </section>
 <section id="sec-tune-siam" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-tune-siam"><span class="header-section-number">6.2</span> Siamese network</h2>
-<p>A limited hyperparameter search tested how sensitive the Siamese network was to learning rate (0.0005, 0.001 and 0.002), contrastive margin (0.5, 1 and 1.5) and embedding dimension (16, 32 and 64). These control how quickly the network learns, how far apart different-writer embeddings are encouraged to be, and how much information the embedding can represent. Each configuration was evaluated using two seeds, varying one hyperparameter at a time from the baseline (learning rate 0.001, margin 1, embedding dimension 32) shown in <a href="#fig-tune-siam" class="quarto-xref">Figure&nbsp;14</a> and <a href="#tbl-tune-siam" class="quarto-xref">Table&nbsp;10</a>.</p>
+<p>A limited hyperparameter search tested how sensitive the Siamese network was to learning rate (0.0005, 0.001 and 0.002), contrastive margin (0.5, 1 and 1.5) and embedding dimension (16, 32 and 64). These control how quickly the network learns, how far apart different-writer embeddings are encouraged to be, and how much information the embedding can represent. Nine configurations were evaluated using two seeds each. Seven configurations formed the one-factor-at-a-time comparisons shown in <a href="#fig-tune-siam" class="quarto-xref">Figure&nbsp;14</a>, with two additional configurations also tested.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-tune-siam" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -914,7 +915,7 @@ Table&nbsp;9: Regularising the 3-layer CNN: three seeds per setting, validation 
 <img src="index_files/figure-html/fig-tune-siam-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-tune-siam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;14: Siamese validation AUC across hyperparameter values (points = seeds).
+Figure&nbsp;14: Siamese validation AUC across hyperparameter values. Grey points represent individual seeds, while black points and lines represent mean validation AUC.
 </figcaption>
 </figure>
 </div>
@@ -974,8 +975,9 @@ Table&nbsp;10: Sensitivity of Siamese validation AUC to individual hyperparamete
 </figure>
 </div>
 </div>
-<p>The highest mean validation AUC among the one-factor comparisons comes from the baseline settings: learning rate 0.001, margin 1 and embedding dimension 32. Validation AUC remains above 99.8% on average across the tested values, so the overall differences are small; <a href="#tbl-tune-siam" class="quarto-xref">Table&nbsp;10</a> shows that some of these differences are comparable to the variation between seeds, so the results do not establish that the chosen configuration is globally optimal.</p>
-<p>Test performance on the main split – 0.8512 AUC, 74.57% balanced accuracy and 23.71% EER, reported in <a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a> – is noticeably lower than the validation AUC above 99.8% seen during tuning. The difference is partly explained by pair composition: same-digit test pairs reach a much higher AUC than cross-digit pairs (<a href="#tbl-comp-siam-digit-comparison" class="quarto-xref">Table&nbsp;12</a>), and the network was trained only on same-digit pairs (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>). It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.</p>
+<p>The highest mean validation AUC among the one-factor comparisons came from the baseline settings: learning rate 0.001, margin 1 and embedding dimension 32. Validation AUC remained above 99.8% on average across the tested values, so the overall differences were small. Embedding dimension had the largest effect, with a range of approximately 0.108 percentage points between mean AUCs, while margin and learning rate varied by approximately 0.043 and 0.079 points respectively. <a href="#fig-tune-siam" class="quarto-xref">Figure&nbsp;14</a> also shows that some differences between settings were comparable to the variation between seeds, so the results do not establish that the chosen configuration is globally optimal.</p>
+<p>The selected model achieved a validation AUC of 0.9997, but test performance fell to 0.8512 AUC, 74.57% balanced accuracy and 23.71% EER. The difference is partly explained by pair composition. Same-digit test pairs achieved 0.980 AUC and 84.4% balanced accuracy, compared with 0.695 AUC and 50.0% balanced accuracy for cross-digit pairs. At the validation-selected threshold, all 400 cross-digit pairs were classified as different-writer pairs, including 200 genuine matches.</p>
+<p>This is consistent with the network having been trained only on same-digit pairs. It learned to compare handwriting styles when digit shape was held fixed, but transferred less effectively when the two images represented different digits. Including cross-digit positive pairs during training would be a useful extension to test whether this limitation can be reduced.</p>
 </section>
 </section>
 <section id="sec-comp" class="level1" data-number="7">
@@ -1117,13 +1119,13 @@ Figure&nbsp;16: Can one digit identify the writer on its own? Accuracy on each d
 <img src="index_files/figure-html/fig-comp-siam-digit-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-siam-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;17: Siamese matching AUC by digit.
+Figure&nbsp;17: Siamese matching ROC AUC by digit for same-digit pairs in the held-out test set.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p><a href="#fig-comp-siam-digit" class="quarto-xref">Figure&nbsp;17</a> shows that the network performs consistently well when both images represent the same digit. Across digits 0–4, ROC AUC ranges from 0.9971 for digit 3 to 0.9997 for digit 1, while balanced accuracy ranges from 98.3% to 99.3%. The differences between digits are small, suggesting that writer-specific characteristics are identifiable across all five digits when the digit is held fixed.</p>
+<p><a href="#fig-comp-siam-digit" class="quarto-xref">Figure&nbsp;17</a> shows that the Siamese network performed consistently well when both images represented the same digit. Across digits 0–4, ROC AUC ranged from 0.9971 for digit 3 to 0.9997 for digit 1, while balanced accuracy ranged from 98.3% to 99.3%. Digits 0 and 1 performed slightly better than digits 2–4, but the differences were small. This suggests that writer-specific characteristics were identifiable across all five digits when the digit was held fixed.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div id="fig-comp-siam-session" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -1132,13 +1134,14 @@ Figure&nbsp;17: Siamese matching AUC by digit.
 <img src="index_files/figure-html/fig-comp-siam-session-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-siam-session-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;18: Distances for same-writer pairs from the same session vs different sessions.
+Figure&nbsp;18: Siamese embedding distances for genuine same-writer pairs from the same session and different sessions. Larger distances indicate weaker matching.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Session differences have a clearer effect than digit does. <a href="#fig-comp-siam-session" class="quarto-xref">Figure&nbsp;18</a> shows that genuine pairs from the same session have a mean embedding distance of 0.166, compared with 0.536 for pairs from different sessions – more than 3.2 times as far apart in embedding space when the images come from different sessions. The network reaches 0.9985 AUC and 98.9% balanced accuracy on same-session comparisons, compared with 0.9196 AUC and 64.8% across sessions – so although the network can still distinguish genuine from different-writer pairs reasonably well across thresholds (the AUC drop is small), it is far less reliable at a single fixed threshold when the writer’s handwriting has changed between sessions.</p>
+<p>Session differences had a clearer effect. <a href="#fig-comp-siam-session" class="quarto-xref">Figure&nbsp;18</a> shows that genuine pairs from the same session had a mean embedding distance of 0.166, compared with 0.536 for pairs from different sessions. The same writer’s handwriting was therefore more than three times as far apart in embedding space when the images came from different sessions.</p>
+<p>The Siamese network achieved an AUC of 0.9985 and balanced accuracy of 98.92% on same-session comparisons, compared with 0.9196 AUC and 64.85% balanced accuracy across sessions. Sensitivity fell from 99.10% to 31.35% at the fixed threshold. This means that although the network could still distinguish genuine from different-writer pairs reasonably well across thresholds, it frequently rejected genuine matches when the writer’s handwriting changed between sessions.</p>
 <div class="cell">
 <div id="tbl-comp-siam-digit-comparison" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -1178,7 +1181,7 @@ Table&nbsp;12: Siamese verification AUC by pair composition on the held-out test
 </figure>
 </div>
 </div>
-<p><a href="#tbl-comp-siam-digit-comparison" class="quarto-xref">Table&nbsp;12</a> shows the same limitation as <a href="#sec-tune-siam" class="quarto-xref">Section&nbsp;6.2</a> when comparing different digits: same-digit AUC is far higher than cross-digit AUC. This is consistent with the network having been trained only on same-digit pairs (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>): it learned to compare handwriting styles when digit shape was held fixed, but transfers less effectively when the two images represent different digits. Together, these results show that the Siamese network learns useful writer-specific information, but matching becomes less reliable when handwriting changes across sessions or digit identities. Training on a wider variety of genuine pairs may help improve robustness.</p>
+<p>The Siamese network shows a similar limitation when comparing different digits (<a href="#tbl-comp-siam-digit-comparison" class="quarto-xref">Table&nbsp;12</a>): same-digit AUC (0.975) is far higher than cross-digit AUC (0.688). All 400 cross-digit pairs were rejected at the chosen threshold, including 200 genuine matches. Together, these results show that the Siamese network learns useful writer-specific information, but matching becomes less reliable when handwriting changes across sessions or digit identities. Training on a wider variety of genuine pairs may help improve robustness.</p>
 </section>
 <section id="sec-comp-both" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="sec-comp-both"><span class="header-section-number">7.3</span> Side by side</h2>
@@ -1187,7 +1190,7 @@ Table&nbsp;12: Siamese verification AUC by pair composition on the held-out test
 <div id="tbl-comp-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;13: PCA baseline, CNN and Siamese embeddings scored on the same 1,400 test pairs. AUC and EER are for same-writer matching; nearest-centroid accuracy is session-5 writer identification against training-writer centroids (chance = 5%).
+Table&nbsp;13: PCA baseline, CNN and Siamese embeddings evaluated on the same 1,400 test pairs. ROC AUC and equal error rate measure same-writer matching, while nearest-centroid accuracy measures session-5 writer identification against training-writer centroids (chance = 5%).
 </figcaption>
 <div aria-describedby="tbl-comp-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
@@ -1240,7 +1243,7 @@ Table&nbsp;13: PCA baseline, CNN and Siamese embeddings scored on the same 1,400
 <img src="index_files/figure-html/fig-comp-digit-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-comp-digit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;19: Matching AUC by digit (same-digit test pairs only) for the PCA baseline, CNN and Siamese network.
+Figure&nbsp;19: Comparison of writer-identification performance across digits and models.
 </figcaption>
 </figure>
 </div>
@@ -1249,7 +1252,7 @@ Figure&nbsp;19: Matching AUC by digit (same-digit test pairs only) for the PCA b
 <p>On overall matching, the ranking in <a href="#tbl-comp-summary" class="quarto-xref">Table&nbsp;13</a> is CNN &gt; Siamese &gt; PCA: the CNN embedding reaches 0.943 AUC against the Siamese network’s 0.844 and the PCA baseline’s 0.767, with equal error rate telling the same story in reverse. That’s a little surprising given the Siamese network is the one directly trained to minimise exactly this kind of pairwise distance – the gap is explained by <code>data/test_pairs.csv</code> including cross-digit pairs, which the Siamese network never saw in training (it was trained on same-digit pairs only, <a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>) and matches much worse on; restricted to same-digit pairs, <a href="#fig-comp-digit" class="quarto-xref">Figure&nbsp;19</a> shows the Siamese network is competitive with or ahead of the CNN on most digits. Nearest-centroid identification tells a different story again: the CNN embedding reaches 58.1% accuracy, clearly ahead of the PCA baseline’s 38.9%, while the Siamese embedding trails both at 24.0% – well above the 5% chance rate, but evidently the Siamese network’s contrastive training pulls same-writer pairs together locally without necessarily arranging all 20 writers into compact, well-separated global clusters the way a 20-class softmax classifier is directly pushed to.</p>
 <p>That split points to which model suits which question. If the task is “which of these 20 known writers wrote this”, the CNN is the right tool and the cheaper one to run at inference (one forward pass, one softmax); if it ever needs to cover a 21st writer, though, it needs retraining from scratch, because the output layer itself is sized to 20 classes. If the task is “did the same person write these two samples” – including for someone never seen in training – the Siamese network is the right tool, exactly because it was designed and evaluated for that (<a href="#sec-siam" class="quarto-xref">Section&nbsp;5</a>’s unseen-writer experiment); its cost is a less interpretable per-writer signal, as the centroid result above shows.</p>
 <p>The digit rankings mostly agree across methods: digit 0 is at or near the best-matching digit for both the CNN and the Siamese network in <a href="#fig-comp-digit" class="quarto-xref">Figure&nbsp;19</a>, broadly consistent with the EDA’s digit-0-restricted PCA (<a href="#fig-eda-pca" class="quarto-xref">Figure&nbsp;5</a>) showing clean writer clusters for that digit. The session gap – how much farther apart same-writer pairs sit when they come from different sessions rather than the same one – is present for every model: cross-session distances exceed same-session distances by a factor of 5.9x for the PCA baseline, 3.6x for the CNN, and 2.8x for the Siamese network, confirming that the session drift documented in <a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a> costs every model some matching accuracy, not just the simplest one.</p>
-<p>As with <a href="#sec-split" class="quarto-xref">Section&nbsp;3</a>, these numbers should be read with the data’s limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) – a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.</p>
+<p>As with <a href="#sec-eda" class="quarto-xref">Section&nbsp;2</a>, these numbers should be read with the data’s limits in mind: 20 simulated writers is a small, closed, easy world next to real-world identification, and all three embedding spaces are evaluated on one simulated test session (session 5) – a real deployment spanning many more sessions, writers and genuinely different pens and paper would likely show a larger gap between methods, and a larger session effect, than measured here.</p>
 </section>
 </section>
 <section id="sec-conclusion" class="level1" data-number="8">
