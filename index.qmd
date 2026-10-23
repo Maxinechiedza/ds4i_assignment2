@@ -1083,11 +1083,11 @@ The Siamese network achieved a test ROC AUC of `r sprintf("%.3f", siam_auc)` and
 
 These findings are limited by the use of clean, simulated handwriting from only 20 writers and five digits. Future work could evaluate both models on real handwriting collected across more sessions and writing conditions, while including cross-digit pairs during Siamese training to improve generalisation. Overall, the study shows that both approaches can capture writer-specific characteristics, but their usefulness depends on the task and how well they handle changes in handwriting.
 
-
+# Plagiarism declaration {.appendix}
 
 # AI use statement {.appendix}
 
-Condensed from the dated log in [`AI_USE_LOG.md`](https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md) in the repository.
+For each of the nine tasks in the brief, we record: the tool used, what it was used for, how its output was checked, and roughly how much of what it produced was used as-is versus rewritten. A full, dated log of every individual interaction is kept in [`AI_USE_LOG.md`](https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md) in the project repository; this table summarises it per task.
 
 | Task | Member | \(a\) Tool | \(b\) Used for | \(c\) How checked | \(d\) How much used |
 |------------|---------|----------|----------------------------|---------------------------|--------------|

@@ -18,7 +18,8 @@ Nicole Thomas (THMNIC036) - Role C: Siamese network
     (Task 5) and its results by digit and session (Task 6).
 
 Each member is responsible for the report sections on their own tasks.
-[Introduction, conclusion and presentation split - to be confirmed.]
+The introduction and conclusion were written by Nicole. Maxine set up the
+presentation, and each member edits their own slides.
 
 
 (b) GitHub Pages website
