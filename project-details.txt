@@ -1,4 +1,4 @@
-STA5073Z Data Science for Industry 2026 - Assignment 2
+STA5073Z Data Science for Industry 2026 - Assignment 2 - project details
 Image classification with neural networks
 
 

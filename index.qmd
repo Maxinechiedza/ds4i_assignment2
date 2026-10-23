@@ -1091,6 +1091,13 @@ These findings are limited by the use of clean, simulated handwriting from only 
 
 # Plagiarism declaration {.appendix}
 
+We, Maxine Senderayi (SNDMAX001), Jesse MacDonald (MCDJES006) and Nicole Thomas (THMNIC036), declare that:
+
+1. We know that plagiarism is wrong. Plagiarism is to use another's work and pretend that it is one's own.
+2. Each contribution to, and quotation in, this report from the work of other people has been attributed, and has been cited and referenced.
+3. This report is our own work. Our use of AI tools is described in the AI use statement below.
+4. We have not allowed, and will not allow, anyone to copy our work with the intention of passing it off as their own work.
+
 # AI use statement {.appendix}
 
 For each of the nine tasks in the brief, we record: the tool used, what it was used for, how its output was checked, and roughly how much of what it produced was used as-is versus rewritten. A full, dated log of every individual interaction is kept in [`AI_USE_LOG.md`](https://github.com/Maxinechiedza/ds4i_assignment2/blob/main/AI_USE_LOG.md) in the project repository; this table summarises it per task.
